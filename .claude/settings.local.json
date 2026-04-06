@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(tasklist /FI \"PID eq 14736\" /FO LIST)",
+      "Bash(taskkill //PID 14736 //F)",
+      "Bash(npm run:*)",
+      "Bash(pip install:*)",
+      "Bash(python tools/seed_demo_patients.py)",
+      "Bash(curl -s http://localhost:3000/patients)",
+      "Bash(python -c ':*)",
+      "Bash(python tools/generate_script.py --patient_id 8bd3d9b1-7cfb-4e93-b4e2-e782c82d04fa --call_slot morning)",
+      "Bash(python tools/generate_script.py --patient_id a9681d2a-a2ad-4a4e-beec-833341198822 --call_slot medication)",
+      "Bash(python tools/make_call.py --patient_id 8bd3d9b1-7cfb-4e93-b4e2-e782c82d04fa --call_slot morning --dry_run true)",
+      "Bash(python tools/make_call.py --patient_id 8bd3d9b1-7cfb-4e93-b4e2-e782c82d04fa --call_slot morning)",
+      "Bash(ngrok version:*)",
+      "Bash(npx tsc:*)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\pulki\\OneDrive\\Documents\\AI Projects\\Post-surgery rehab tool\\app\\(nurse)\\patients"
+    ]
+  }
+}
