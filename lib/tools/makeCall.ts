@@ -90,7 +90,6 @@ export async function makeCall(
     statusCallback: `${APP_URL}/api/call-webhook/status?log_id=${logId}`,
     statusCallbackEvent: ["completed", "no-answer", "failed"],
     timeout: 30,
-    machineDetection: "Enable",
   });
 
   return { call_sid: call.sid, log_id: logId, status: call.status };

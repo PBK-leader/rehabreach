@@ -16,7 +16,7 @@ function escapeXml(text: string): string {
 
 function buildSay(text: string, language: string): string {
   const lang = language === "hi" ? "hi-IN" : "en-US";
-  const voice = language === "hi" ? "Google.hi-IN-Standard-A" : "Google.en-US-Neural2-F";
+  const voice = language === "hi" ? "Polly.Aditi" : "Polly.Joanna";
   const parts = text.split("[pause]").map((p) => p.trim()).filter(Boolean);
   return parts
     .map((p) => `<Say language="${lang}" voice="${voice}">${escapeXml(p)}</Say><Pause length="1"/>`)
@@ -61,7 +61,8 @@ export async function POST(req: NextRequest) {
       }
       const firstQuestion = buildSay(exchanges[0].question as string, language);
       const gatherUrl = `${appUrl}/api/call-webhook/gather?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=0`;
-      return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${greetingSay}${firstQuestion}<Gather input="speech" timeout="8" speechTimeout="auto" action="${escapeXml(gatherUrl)}" method="POST"><Pause length="1"/></Gather></Response>`);
+      const webhookUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=0`;
+      return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${greetingSay}<Gather input="speech" timeout="10" speechTimeout="auto" action="${escapeXml(gatherUrl)}" method="POST">${firstQuestion}<Pause length="2"/></Gather><Redirect method="POST">${escapeXml(webhookUrl)}</Redirect></Response>`);
     }
 
     const prevExchange = exchanges[exchange_index - 1];
@@ -75,7 +76,8 @@ export async function POST(req: NextRequest) {
 
     const nextQuestion = buildSay(exchanges[exchange_index].question as string, language);
     const gatherUrl = `${appUrl}/api/call-webhook/gather?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${exchange_index}`;
-    return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${echoSay}${nextQuestion}<Gather input="speech" timeout="8" speechTimeout="auto" action="${escapeXml(gatherUrl)}" method="POST"><Pause length="1"/></Gather></Response>`);
+    const webhookUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${exchange_index}`;
+    return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${echoSay}<Gather input="speech" timeout="10" speechTimeout="auto" action="${escapeXml(gatherUrl)}" method="POST">${nextQuestion}<Pause length="2"/></Gather><Redirect method="POST">${escapeXml(webhookUrl)}</Redirect></Response>`);
 
   } catch (e) {
     console.error("call-webhook error:", e);
