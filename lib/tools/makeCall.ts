@@ -59,7 +59,7 @@ export async function makeCall(
   await synthesiseAudio(script.greeting as string, language);
 
   // Log call attempt
-  const { data: logData } = await supabase
+  const { data: logData, error: insertError } = await supabase
     .from("call_logs")
     .insert({
       patient_id: patientId,
@@ -75,7 +75,11 @@ export async function makeCall(
     .select()
     .single();
 
-  const logId = logData?.id;
+  if (insertError || !logData?.id) {
+    throw new Error(`Failed to create call log: ${insertError?.message ?? "no id returned"}`);
+  }
+
+  const logId = logData.id;
 
   // Place Twilio call
   const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);

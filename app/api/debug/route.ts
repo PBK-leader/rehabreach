@@ -19,6 +19,22 @@ export async function GET() {
     } else {
       results.supabase_query = `OK — ${data?.length ?? 0} rows`;
     }
+
+    // Check call_logs.call_script column
+    const { data: logSample, error: logError } = await supabase
+      .from("call_logs")
+      .select("id, status, call_script")
+      .order("called_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (logError && logError.code !== "PGRST116") {
+      results.call_logs_check = `ERROR: ${logError.message}`;
+    } else if (!logSample) {
+      results.call_logs_check = "no call logs yet";
+    } else {
+      results.call_logs_check = `last log id=${logSample.id} status=${logSample.status} has_script=${logSample.call_script !== null}`;
+    }
   } catch (e: unknown) {
     results.supabase_query = `EXCEPTION: ${e instanceof Error ? e.message : String(e)}`;
   }

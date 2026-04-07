@@ -36,18 +36,19 @@ export async function POST(req: NextRequest) {
 
   try {
     const supabase = createServerClient();
-    const { data: log } = await supabase
+    const { data: log, error: logError } = await supabase
       .from("call_logs")
       .select("call_script, language")
       .eq("id", log_id)
       .single();
 
-    if (!log?.call_script) {
+    if (logError || !log?.call_script) {
+      console.error("call-webhook: no script found for log_id", log_id, logError?.message);
       return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response><Say>Sorry, I could not load your call details. Goodbye.</Say><Hangup/></Response>`);
     }
 
     const script = log.call_script as Record<string, unknown>;
-    const language = (script.language as string) ?? "en";
+    const language = (script.language as string) ?? (log.language as string) ?? "en";
     const exchanges = (script.exchanges as Record<string, unknown>[]) ?? [];
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
