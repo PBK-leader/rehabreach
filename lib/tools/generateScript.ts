@@ -13,7 +13,7 @@ Generate a structured call script for an elderly patient. The script must:
 - Be warm, gentle, and slow-paced. No medical jargon.
 - Use short sentences (under 12 words where possible).
 - Ask a maximum of 1 question per exchange.
-- Insert [pause] cues every 2 sentences.
+- Insert at most ONE [pause] cue per field, only between two distinct thoughts. Do not add [pause] after every sentence.
 - Echo confirmation before moving to next question.
 - Detect and escalate immediately if any urgent cardiac symptom is mentioned.
 - Be written entirely in the patient's specified language.

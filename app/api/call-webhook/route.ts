@@ -19,7 +19,7 @@ function buildSay(text: string, language: string): string {
   const voice = language === "hi" ? "Polly.Aditi" : "Polly.Joanna";
   const parts = text.split("[pause]").map((p) => p.trim()).filter(Boolean);
   return parts
-    .map((p) => `<Say language="${lang}" voice="${voice}">${escapeXml(p)}</Say><Pause length="1"/>`)
+    .map((p, i) => `<Say language="${lang}" voice="${voice}">${escapeXml(p)}</Say>${i < parts.length - 1 ? '<Pause length="1"/>' : ""}`)
     .join("");
 }
 
@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
   const call_slot = searchParams.get("call_slot");
   const log_id = searchParams.get("log_id");
   const exchange_index = parseInt(searchParams.get("exchange") ?? "0");
+  const negative = searchParams.get("negative") === "1";
 
   if (!patient_id || !call_slot || !log_id) {
     return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response><Say>Sorry, there was a configuration error. Goodbye.</Say><Hangup/></Response>`);
@@ -66,7 +67,12 @@ export async function POST(req: NextRequest) {
     }
 
     const prevExchange = exchanges[exchange_index - 1];
-    const echoSay = buildSay(prevExchange.confirmation_echo as string, language);
+    const neutralEchoEN = "I understand. Thank you for letting me know. I have noted that.";
+    const neutralEchoHI = "Samajh gaya. Dhanyavaad batane ke liye. Maine note kar liya hai.";
+    const echoText = negative
+      ? (language === "hi" ? neutralEchoHI : neutralEchoEN)
+      : (prevExchange.confirmation_echo as string);
+    const echoSay = buildSay(echoText, language);
 
     if (exchange_index >= exchanges.length) {
       const closingSay = buildSay(script.closing as string, language);
