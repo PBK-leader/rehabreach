@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
-import { execFile } from "child_process";
-import { promisify } from "util";
-import path from "path";
-
-const execFileAsync = promisify(execFile);
-
-// Twilio calls this when a call ends. We update the log status and
-// trigger retry_call.py if the patient didn't answer.
+import { parseCall } from "@/lib/tools/parseCall";
+import { makeCall } from "@/lib/tools/makeCall";
 
 export async function POST(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -22,7 +16,6 @@ export async function POST(req: NextRequest) {
   const supabase = createServerClient();
 
   try {
-    // Map Twilio status to our schema
     let status: string;
     if (callStatus === "completed") {
       status = "completed";
@@ -34,13 +27,34 @@ export async function POST(req: NextRequest) {
 
     await supabase.from("call_logs").update({ status }).eq("id", log_id);
 
-    // Trigger retry if no-answer
+    if (status === "completed") {
+      // Auto-parse transcript in background
+      const { data: log } = await supabase
+        .from("call_logs")
+        .select("transcript, patient_id, call_type")
+        .eq("id", log_id)
+        .single();
+
+      if (log?.transcript) {
+        parseCall(log_id).catch((e) => console.error("auto-parse error:", e));
+      }
+    }
+
     if (status === "no_answer") {
-      const scriptPath = path.join(process.cwd(), "tools", "retry_call.py");
-      // Run in background — don't await
-      execFileAsync("python", [scriptPath, "--log_id", log_id]).catch((e) =>
-        console.error("retry_call error:", e)
-      );
+      // Retry once if this is not already a retry
+      const { data: log } = await supabase
+        .from("call_logs")
+        .select("retry_of, patient_id, call_type")
+        .eq("id", log_id)
+        .single();
+
+      if (log && !log.retry_of) {
+        // Wait 30 min then retry — schedule via a delayed background call
+        setTimeout(() => {
+          makeCall(log.patient_id, log.call_type ?? "morning", false, log_id)
+            .catch((e) => console.error("retry call error:", e));
+        }, 30 * 60 * 1000);
+      }
     }
 
     return NextResponse.json({ ok: true });

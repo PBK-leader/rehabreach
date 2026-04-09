@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase";
 import { Patient, Task, CallLog, CONDITION_LABELS, SLOT_LABELS } from "@/lib/types";
+import CallNowButton from "./CallNowButton";
 
 export const revalidate = 0;
 
@@ -75,12 +76,15 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
             </p>
           </div>
         </div>
-        <Link
-          href={`/plan-builder?patient_id=${patient.id}`}
-          className="px-3 py-2 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-        >
-          Edit plan
-        </Link>
+        <div className="flex items-center gap-2">
+          <CallNowButton patientId={patient.id} />
+          <Link
+            href={`/plan-builder?patient_id=${patient.id}`}
+            className="px-3 py-2 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+          >
+            Edit plan
+          </Link>
+        </div>
       </div>
 
       {/* Patient info cards */}
@@ -137,21 +141,44 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
         {logs.length === 0 ? (
           <p className="text-sm text-slate-400">No calls yet.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {logs.map((log) => (
-              <div key={log.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
-                <div>
-                  <p className="text-sm font-medium text-slate-700">
-                    {log.call_type ? SLOT_LABELS[log.call_type] : "—"}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    {log.called_at ? new Date(log.called_at).toLocaleString() : "—"}
-                  </p>
+              <div key={log.id} className="border border-slate-100 rounded-lg overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 bg-slate-50">
+                  <div>
+                    <p className="text-sm font-medium text-slate-700">
+                      {log.call_type ? SLOT_LABELS[log.call_type] : "—"}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {log.called_at ? new Date(log.called_at).toLocaleString() : "—"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FlagPill flag={log.severity_flag} />
+                    <StatusPill status={log.status} />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <FlagPill flag={log.severity_flag} />
-                  <StatusPill status={log.status} />
-                </div>
+                {log.parsed_results && (log.parsed_results as {task_name: string; completed: boolean | null; notes: string; alert_flag: string}[]).length > 0 && (
+                  <div className="px-4 py-3 space-y-1.5">
+                    {(log.parsed_results as {task_name: string; completed: boolean | null; notes: string; value_reported?: string; alert_flag: string}[]).map((r, i) => (
+                      <div key={i} className="flex items-center justify-between text-xs">
+                        <span className="text-slate-600">{r.task_name.replace(/_/g, " ")}</span>
+                        <div className="flex items-center gap-2">
+                          {r.value_reported && <span className="text-slate-400">{r.value_reported}</span>}
+                          {r.completed === true && <span className="text-green-600 font-medium">✓ Done</span>}
+                          {r.completed === false && <span className="text-red-600 font-medium">✗ Missed</span>}
+                          {r.completed === null && <span className="text-slate-400">?</span>}
+                          {r.alert_flag !== "normal" && <FlagPill flag={r.alert_flag} />}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {log.transcript && !log.parsed_results && (
+                  <div className="px-4 py-2">
+                    <p className="text-xs text-slate-400 truncate">{log.transcript.slice(0, 120)}…</p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
