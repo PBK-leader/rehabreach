@@ -68,10 +68,10 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({ patient_id, reason: "cardiac_symptom", log_id }),
       });
 
+      const urgentText = (exchange.urgent_response as string).replace(/\[pause\]/gi, " ").replace(/\s+/g, " ").trim();
       return twiml(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say language="${lang}" voice="${voice}">${escapeXml(exchange.urgent_response as string)}</Say>
-  <Pause length="2"/>
+  <Say language="${lang}" voice="${voice}"><prosody rate="medium">${escapeXml(urgentText)}</prosody></Say>
   <Hangup/>
 </Response>`);
     }

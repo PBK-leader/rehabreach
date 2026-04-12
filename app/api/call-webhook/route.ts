@@ -17,10 +17,9 @@ function escapeXml(text: string): string {
 function buildSay(text: string, language: string): string {
   const lang = language === "hi" ? "hi-IN" : "en-US";
   const voice = language === "hi" ? "Polly.Aditi" : "Polly.Joanna";
-  const parts = text.split("[pause]").map((p) => p.trim()).filter(Boolean);
-  return parts
-    .map((p, i) => `<Say language="${lang}" voice="${voice}">${escapeXml(p)}</Say>${i < parts.length - 1 ? '<Pause length="1"/>' : ""}`)
-    .join("");
+  // Strip [pause] tags — rely on natural speech rhythm instead
+  const cleaned = text.replace(/\[pause\]/gi, " ").replace(/\s+/g, " ").trim();
+  return `<Say language="${lang}" voice="${voice}"><prosody rate="fast">${escapeXml(cleaned)}</prosody></Say>`;
 }
 
 export async function POST(req: NextRequest) {
