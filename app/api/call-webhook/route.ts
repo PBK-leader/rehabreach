@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
     const language = (script.language as string) ?? (log.language as string) ?? "en";
     const exchanges = (script.exchanges as Record<string, unknown>[]) ?? [];
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const sttLang = language === "hi" ? "hi-IN" : "en-US";
 
     if (exchange_index === 0) {
       const greetingSay = buildSay(script.greeting as string, language);
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
       const firstQuestion = buildSay(exchanges[0].question as string, language);
       const gatherUrl = `${appUrl}/api/call-webhook/gather?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=0`;
       const webhookUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=0`;
-      return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${greetingSay}<Gather input="speech" timeout="10" speechTimeout="auto" action="${escapeXml(gatherUrl)}" method="POST">${firstQuestion}<Pause length="2"/></Gather><Redirect method="POST">${escapeXml(webhookUrl)}</Redirect></Response>`);
+      return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${greetingSay}<Gather input="speech" language="${sttLang}" timeout="10" speechTimeout="auto" action="${escapeXml(gatherUrl)}" method="POST">${firstQuestion}<Pause length="2"/></Gather><Redirect method="POST">${escapeXml(webhookUrl)}</Redirect></Response>`);
     }
 
     const prevExchange = exchanges[exchange_index - 1];
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest) {
     const nextQuestion = buildSay(exchanges[exchange_index].question as string, language);
     const gatherUrl = `${appUrl}/api/call-webhook/gather?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${exchange_index}`;
     const webhookUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${exchange_index}`;
-    return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${echoSay}<Gather input="speech" timeout="10" speechTimeout="auto" action="${escapeXml(gatherUrl)}" method="POST">${nextQuestion}<Pause length="2"/></Gather><Redirect method="POST">${escapeXml(webhookUrl)}</Redirect></Response>`);
+    return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${echoSay}<Gather input="speech" language="${sttLang}" timeout="10" speechTimeout="auto" action="${escapeXml(gatherUrl)}" method="POST">${nextQuestion}<Pause length="2"/></Gather><Redirect method="POST">${escapeXml(webhookUrl)}</Redirect></Response>`);
 
   } catch (e) {
     console.error("call-webhook error:", e);
