@@ -2,121 +2,203 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#0f1117] text-white">
+    <div className="min-h-screen bg-white font-sans">
       {/* Nav */}
-      <nav className="px-8 py-5 flex items-center justify-between border-b border-white/5">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-rose-500 flex items-center justify-center">
-            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
+      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100 px-6 py-0">
+        <div className="max-w-6xl mx-auto flex items-center justify-between h-16">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg grad-bg flex items-center justify-center">
+              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </div>
+            <span className="font-bold text-slate-900 text-[17px] tracking-tight">RehabReach</span>
           </div>
-          <span className="font-bold text-white">RehabReach</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/patients" className="text-sm text-white/60 hover:text-white transition-colors">Nurse Portal</Link>
-          <Link href="/dashboard" className="text-sm bg-white text-[#0f1117] font-semibold px-4 py-2 rounded-lg hover:bg-white/90 transition-colors">
-            Family Dashboard
-          </Link>
+          <div className="hidden md:flex items-center gap-8">
+            <a href="#how" className="text-sm text-slate-500 hover:text-slate-900 transition-colors">How it works</a>
+            <a href="#features" className="text-sm text-slate-500 hover:text-slate-900 transition-colors">Features</a>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/patients" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
+              Nurse Portal
+            </Link>
+            <Link
+              href="/dashboard"
+              className="text-sm font-semibold grad-bg text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+            >
+              Family Dashboard
+            </Link>
+          </div>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="max-w-5xl mx-auto px-8 pt-24 pb-20">
-        <div className="inline-flex items-center gap-2 border border-rose-500/30 bg-rose-500/10 text-rose-400 text-xs font-medium px-3 py-1.5 rounded-full mb-8">
-          <span className="pulse-dot w-1.5 h-1.5 bg-rose-400 rounded-full" />
-          AI-powered cardiac monitoring · Live
+      <section className="max-w-6xl mx-auto px-6 pt-20 pb-16">
+        <div className="grid grid-cols-2 gap-16 items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 bg-[#e0f4fa] text-[#006d8f] text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
+              <span className="pulse-live w-1.5 h-1.5 bg-[#006d8f] rounded-full" />
+              AI-powered cardiac rehabilitation
+            </div>
+
+            <h1 className="text-5xl font-bold text-slate-900 leading-[1.1] tracking-tight mb-5">
+              Post-surgery recovery,<br />
+              <span className="grad-text">monitored every day.</span>
+            </h1>
+
+            <p className="text-lg text-slate-500 leading-relaxed mb-8 max-w-md">
+              Automated AI voice calls check in with cardiac patients 4× daily. Responses are parsed, nurses alerted within seconds, families kept informed — all without manual effort.
+            </p>
+
+            <div className="flex items-center gap-3">
+              <Link
+                href="/patients"
+                className="px-5 py-3 grad-bg text-white font-semibold rounded-xl hover:opacity-90 transition-opacity text-sm shadow-lg shadow-[#006d8f]/20"
+              >
+                Open Nurse Portal →
+              </Link>
+              <Link
+                href="/dashboard"
+                className="px-5 py-3 bg-white text-slate-700 font-semibold rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all text-sm"
+              >
+                Family Dashboard
+              </Link>
+            </div>
+          </div>
+
+          {/* Feature card preview */}
+          <div className="relative">
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-100 overflow-hidden">
+              {/* Mock dashboard */}
+              <div className="grad-bg px-5 py-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-white/60 text-xs font-medium">Patient</p>
+                    <p className="text-white font-bold text-lg">Margaret Chen</p>
+                    <p className="text-white/60 text-xs mt-0.5">Post-CABG · Day 12</p>
+                  </div>
+                  <div className="bg-white/15 rounded-xl px-4 py-2 text-center">
+                    <p className="text-white text-2xl font-black">87%</p>
+                    <p className="text-white/60 text-[10px]">compliance</p>
+                  </div>
+                </div>
+              </div>
+              <div className="px-5 py-4 space-y-3">
+                {[
+                  { slot: "Morning check-in", time: "08:04 AM", status: "completed", flag: null },
+                  { slot: "Medication check", time: "12:01 PM", status: "completed", flag: null },
+                  { slot: "Exercise check", time: "03:00 PM", status: "completed", flag: "watch" },
+                  { slot: "Evening wrap-up", time: "Scheduled 7 PM", status: "pending", flag: null },
+                ].map(({ slot, time, status, flag }) => (
+                  <div key={slot} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${status === "completed" ? "bg-emerald-50" : "bg-slate-50"}`}>
+                        {status === "completed"
+                          ? <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                          : <svg className="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3" /><circle cx="12" cy="12" r="9" strokeWidth={2} /></svg>
+                        }
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-slate-700">{slot}</p>
+                        <p className="text-xs text-slate-400">{time}</p>
+                      </div>
+                    </div>
+                    {flag === "watch" && <span className="text-[11px] bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full font-semibold">Watch</span>}
+                    {status === "pending" && <span className="text-[11px] bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">Pending</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Floating alert card */}
+            <div className="absolute -bottom-4 -right-4 bg-white border border-slate-200 rounded-xl p-3 shadow-lg shadow-slate-100 w-52">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-emerald-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-700">Call completed</p>
+                  <p className="text-[11px] text-slate-400">Medications confirmed ✓</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </section>
 
-        <h1 className="text-6xl font-bold leading-[1.1] mb-6 tracking-tight">
-          Post-surgery recovery<br />
-          <span className="text-rose-400">monitored around the clock.</span>
-        </h1>
-
-        <p className="text-xl text-white/50 max-w-xl mb-10 leading-relaxed">
-          AI voice calls check in with cardiac patients 4× daily. Responses are parsed, nurses alerted, families kept in the loop — with zero manual effort.
-        </p>
-
-        <div className="flex items-center gap-4">
-          <Link
-            href="/patients"
-            className="px-6 py-3 bg-rose-500 text-white font-semibold rounded-xl hover:bg-rose-400 transition-colors"
-          >
-            Open Nurse Portal
-          </Link>
-          <Link
-            href="/dashboard"
-            className="px-6 py-3 bg-white/5 text-white/80 font-semibold rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
-          >
-            Family Dashboard →
-          </Link>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mt-20">
+      {/* Stats */}
+      <section className="border-y border-slate-100 bg-slate-50/50" id="features">
+        <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-4 gap-8">
           {[
-            { value: "4×", label: "Daily check-ins", sub: "per patient, automated" },
+            { value: "4×", label: "Daily AI check-ins", sub: "per patient, fully automated" },
             { value: "2", label: "Languages", sub: "English & Hindi" },
-            { value: "<30s", label: "Alert to nurse", sub: "on cardiac symptom" },
-            { value: "0", label: "Manual calls", sub: "fully automated" },
+            { value: "<30s", label: "Alert response time", sub: "nurse SMS on cardiac symptom" },
+            { value: "100%", label: "Zero manual calls", sub: "nurses focus on care, not admin" },
           ].map(({ value, label, sub }) => (
-            <div key={label} className="border border-white/8 rounded-2xl p-5 bg-white/[0.02]">
-              <p className="text-4xl font-bold text-white mb-1">{value}</p>
-              <p className="text-sm font-semibold text-white/70">{label}</p>
-              <p className="text-xs text-white/30 mt-0.5">{sub}</p>
+            <div key={label} className="text-center">
+              <p className="text-4xl font-black grad-text mb-1">{value}</p>
+              <p className="text-sm font-semibold text-slate-700">{label}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* How it works */}
-      <section className="border-t border-white/5 bg-white/[0.015]">
-        <div className="max-w-5xl mx-auto px-8 py-20">
-          <p className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-3">How it works</p>
-          <h2 className="text-3xl font-bold text-white mb-12">Three stakeholders. One loop.</h2>
+      <section className="max-w-6xl mx-auto px-6 py-20" id="how">
+        <div className="text-center mb-12">
+          <p className="text-xs font-bold text-[#006d8f] uppercase tracking-widest mb-3">How it works</p>
+          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Three stakeholders. One automated loop.</h2>
+        </div>
 
-          <div className="grid grid-cols-3 gap-6">
-            {[
-              {
-                step: "01",
-                icon: "🏥",
-                title: "Nurse sets the plan",
-                desc: "Select condition — tasks auto-populate from clinical templates. Add the patient in under 2 minutes.",
-                color: "border-blue-500/20 bg-blue-500/5",
-                num: "text-blue-400/40",
-              },
-              {
-                step: "02",
-                icon: "📞",
-                title: "AI calls the patient",
-                desc: "Warm bilingual calls at 4 scheduled slots daily. Claude parses every response — meds, exercise, vitals, symptoms.",
-                color: "border-rose-500/20 bg-rose-500/5",
-                num: "text-rose-400/40",
-              },
-              {
-                step: "03",
-                icon: "👨‍👩‍👧",
-                title: "Everyone stays informed",
-                desc: "Nurses get instant SMS alerts. Families see a live compliance dashboard. Weekly email summaries sent automatically.",
-                color: "border-emerald-500/20 bg-emerald-500/5",
-                num: "text-emerald-400/40",
-              },
-            ].map(({ step, icon, title, desc, color, num }) => (
-              <div key={step} className={`border rounded-2xl p-6 ${color}`}>
-                <div className="flex items-start justify-between mb-4">
-                  <span className="text-2xl">{icon}</span>
-                  <span className={`text-4xl font-black ${num}`}>{step}</span>
-                </div>
-                <h3 className="font-semibold text-white mb-2">{title}</h3>
-                <p className="text-sm text-white/40 leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
+        <div className="grid grid-cols-3 gap-6">
+          {[
+            {
+              step: "01",
+              emoji: "🏥",
+              title: "Nurse sets the plan",
+              desc: "Select the cardiac condition — clinical task templates pre-populate. Add a patient in under 2 minutes.",
+              color: "border-[#006d8f]/15 bg-[#e0f4fa]/30",
+              num: "text-[#006d8f]/20",
+            },
+            {
+              step: "02",
+              emoji: "📞",
+              title: "AI calls the patient",
+              desc: "Warm, bilingual voice calls at 4 scheduled slots daily. Claude parses every response — meds, exercise, vitals, symptoms.",
+              color: "border-cyan-200 bg-cyan-50/40",
+              num: "text-cyan-200",
+            },
+            {
+              step: "03",
+              emoji: "👨‍👩‍👧",
+              title: "Everyone stays informed",
+              desc: "Nurses receive instant SMS alerts. Families see a live compliance dashboard. Weekly email summaries sent automatically.",
+              color: "border-emerald-200 bg-emerald-50/40",
+              num: "text-emerald-100",
+            },
+          ].map(({ step, emoji, title, desc, color, num }) => (
+            <div key={step} className={`relative border rounded-2xl p-7 overflow-hidden ${color}`}>
+              <span className={`absolute top-4 right-5 text-6xl font-black select-none ${num}`}>{step}</span>
+              <div className="text-3xl mb-4">{emoji}</div>
+              <h3 className="font-bold text-slate-900 mb-2 text-[15px]">{title}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      <footer className="border-t border-white/5 px-8 py-6 text-center text-xs text-white/20">
-        RehabReach · Cardiac post-surgery rehabilitation
+      <footer className="border-t border-slate-100 px-6 py-6">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md grad-bg flex items-center justify-center">
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </div>
+            <span className="text-sm font-semibold text-slate-600">RehabReach</span>
+          </div>
+          <p className="text-xs text-slate-400">Cardiac post-surgery rehabilitation platform</p>
+        </div>
       </footer>
     </div>
   );
