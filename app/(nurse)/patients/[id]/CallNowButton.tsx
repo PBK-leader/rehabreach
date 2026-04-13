@@ -21,7 +21,7 @@ export default function CallNowButton({ patientId }: { patientId: string }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Call failed");
-      setResult(`Call placed (${data.call_sid})`);
+      setResult(`Call placed ✓`);
     } catch (e) {
       setResult(e instanceof Error ? e.message : "Error placing call");
     } finally {
@@ -34,7 +34,7 @@ export default function CallNowButton({ patientId }: { patientId: string }) {
       <select
         value={slot}
         onChange={(e) => setSlot(e.target.value as CallSlot)}
-        className="text-sm border border-slate-200 rounded-lg px-2 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+        className="text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-700 focus:outline-none focus:border-[#006d8f] focus:ring-2 focus:ring-[#006d8f]/20 transition-colors"
         disabled={loading}
       >
         {SLOTS.map((s) => (
@@ -44,12 +44,12 @@ export default function CallNowButton({ patientId }: { patientId: string }) {
       <button
         onClick={handleCall}
         disabled={loading}
-        className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+        className="px-4 py-2 text-sm grad-bg text-white rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
       >
         {loading ? "Calling…" : "Call now"}
       </button>
       {result && (
-        <span className={`text-xs ${result.startsWith("Call placed") ? "text-green-600" : "text-red-600"}`}>
+        <span className={`text-xs font-medium ${result.startsWith("Call placed") ? "text-emerald-600" : "text-rose-600"}`}>
           {result}
         </span>
       )}

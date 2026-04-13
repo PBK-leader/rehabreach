@@ -86,17 +86,14 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
             value: pct !== null ? `${pct}%` : "—",
             sub: pct !== null ? `${completed} of ${logs.length} calls` : "No calls yet",
             valueClass: pct === null ? "text-slate-300" : pct >= 80 ? "text-emerald-500" : pct >= 50 ? "text-amber-500" : "text-rose-500",
-            accent: true,
           },
-          { label: "HR threshold", value: `${patient.heart_rate_threshold} bpm`, sub: "Alert trigger threshold", valueClass: "text-slate-900", accent: false },
-          { label: "Call schedule", value: `${patient.call_start_hour}:00`, sub: patient.timezone, valueClass: "text-slate-900", accent: false },
-          { label: "Discharge date", value: patient.discharge_date ? new Date(patient.discharge_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—", sub: "Post-discharge monitoring", valueClass: "text-slate-900", accent: false },
-        ].map(({ label, value, sub, valueClass, accent }) => (
-          <div key={label} className={`bg-white rounded-2xl border p-5 ${accent && hasUrgent ? "border-rose-200" : "border-slate-200"}`}>
-            {accent && (
-              <div className="w-8 h-1 rounded-full grad-bg mb-3" />
-            )}
-            <p className="text-xs text-slate-400 uppercase tracking-wide mb-2">{label}</p>
+          { label: "HR threshold", value: `${patient.heart_rate_threshold} bpm`, sub: "Alert trigger threshold", valueClass: "text-slate-800" },
+          { label: "Call schedule", value: `${patient.call_start_hour}:00`, sub: patient.timezone, valueClass: "text-slate-800" },
+          { label: "Discharge date", value: patient.discharge_date ? new Date(patient.discharge_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—", sub: "Post-discharge monitoring", valueClass: "text-slate-800" },
+        ].map(({ label, value, sub, valueClass }) => (
+          <div key={label} className="bg-white rounded-2xl border border-slate-200 p-5">
+            <div className="w-6 h-1 rounded-full grad-bg mb-3" />
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">{label}</p>
             <p className={`text-2xl font-black ${valueClass}`}>{value}</p>
             <p className="text-xs text-slate-400 mt-1">{sub}</p>
           </div>

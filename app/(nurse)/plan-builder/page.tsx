@@ -143,86 +143,104 @@ export default function PlanBuilderPage() {
 
   const slots: CallSlot[] = ["morning", "medication", "exercise", "evening"];
 
+  const inputCls = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 bg-white focus:outline-none focus:border-[#006d8f] focus:ring-2 focus:ring-[#006d8f]/15 transition-colors placeholder:text-slate-400";
+
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Add New Patient</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Add New Patient</h1>
+        <p className="text-sm text-slate-400 mt-1">Set up a patient profile and recovery plan</p>
+      </div>
+
+      {/* Step indicator */}
+      <div className="flex items-center gap-3 mb-6">
+        {(["patient", "tasks"] as const).map((s, i) => (
+          <div key={s} className="flex items-center gap-2">
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === s || (s === "patient" && step === "tasks") ? "grad-bg text-white" : "bg-slate-100 text-slate-400"}`}>
+              {i + 1}
+            </div>
+            <span className={`text-sm font-medium ${step === s ? "text-slate-900" : "text-slate-400"}`}>
+              {s === "patient" ? "Patient details" : "Review tasks"}
+            </span>
+            {i === 0 && <span className="text-slate-300 mx-1">→</span>}
+          </div>
+        ))}
+      </div>
 
       {step === "patient" && (
-        <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-          <h2 className="font-semibold text-slate-700">Patient Details</h2>
-
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-sm text-slate-600 mb-1">Full name *</label>
-              <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" value={patient.name} onChange={(e) => setPatient((p) => ({ ...p, name: e.target.value }))} placeholder="Margaret Chen" />
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Full name *</label>
+              <input className={inputCls} value={patient.name} onChange={(e) => setPatient((p) => ({ ...p, name: e.target.value }))} placeholder="Margaret Chen" />
             </div>
             <div>
-              <label className="block text-sm text-slate-600 mb-1">Phone (international) *</label>
-              <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" value={patient.phone} onChange={(e) => setPatient((p) => ({ ...p, phone: e.target.value }))} placeholder="+91XXXXXXXXXX" />
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Phone *</label>
+              <input className={inputCls} value={patient.phone} onChange={(e) => setPatient((p) => ({ ...p, phone: e.target.value }))} placeholder="+91XXXXXXXXXX" />
             </div>
             <div>
-              <label className="block text-sm text-slate-600 mb-1">Date of birth</label>
-              <input type="date" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" value={patient.date_of_birth} onChange={(e) => setPatient((p) => ({ ...p, date_of_birth: e.target.value }))} />
-            </div>
-            <div>
-              <label className="block text-sm text-slate-600 mb-1">Discharge date</label>
-              <input type="date" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" value={patient.discharge_date} onChange={(e) => setPatient((p) => ({ ...p, discharge_date: e.target.value }))} />
-            </div>
-            <div>
-              <label className="block text-sm text-slate-600 mb-1">Language</label>
-              <select className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" value={patient.language} onChange={(e) => setPatient((p) => ({ ...p, language: e.target.value }))}>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Language</label>
+              <select className={inputCls} value={patient.language} onChange={(e) => setPatient((p) => ({ ...p, language: e.target.value }))}>
                 <option value="en">English</option>
                 <option value="hi">Hindi</option>
               </select>
             </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Date of birth</label>
+              <input type="date" className={inputCls} value={patient.date_of_birth} onChange={(e) => setPatient((p) => ({ ...p, date_of_birth: e.target.value }))} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Discharge date</label>
+              <input type="date" className={inputCls} value={patient.discharge_date} onChange={(e) => setPatient((p) => ({ ...p, discharge_date: e.target.value }))} />
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm text-slate-600 mb-2">Cardiac condition *</label>
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Cardiac condition *</label>
             <div className="grid grid-cols-2 gap-2">
               {(Object.entries(CONDITION_LABELS) as [CardiacCondition, string][]).map(([key, label]) => (
                 <button
                   key={key}
                   type="button"
                   onClick={() => loadTemplate(key)}
-                  className={`text-left px-3 py-2 rounded-lg border text-sm transition-colors ${patient.cardiac_condition === key ? "border-blue-500 bg-blue-50 text-blue-700" : "border-slate-200 hover:border-slate-300"}`}
+                  className={`text-left px-3.5 py-2.5 rounded-xl border text-sm font-medium transition-all ${patient.cardiac_condition === key ? "border-[#006d8f] bg-[#e0f4fa] text-[#006d8f]" : "border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"}`}
                 >
                   {label}
                 </button>
               ))}
             </div>
             {patient.cardiac_condition && (
-              <p className="text-xs text-green-600 mt-2">Template loaded — {tasks.length} tasks pre-filled. You can customise them in the next step.</p>
+              <p className="text-xs text-emerald-600 font-medium mt-2">✓ Template loaded — {tasks.length} tasks pre-filled</p>
             )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-slate-600 mb-1">Heart rate alert threshold (bpm)</label>
-              <input type="number" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" value={patient.heart_rate_threshold} onChange={(e) => setPatient((p) => ({ ...p, heart_rate_threshold: Number(e.target.value) }))} />
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">HR alert threshold (bpm)</label>
+              <input type="number" className={inputCls} value={patient.heart_rate_threshold} onChange={(e) => setPatient((p) => ({ ...p, heart_rate_threshold: Number(e.target.value) }))} />
             </div>
             <div>
-              <label className="block text-sm text-slate-600 mb-1">Call start hour (7–12)</label>
-              <input type="number" min={7} max={12} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" value={patient.call_start_hour} onChange={(e) => setPatient((p) => ({ ...p, call_start_hour: Number(e.target.value) }))} />
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Call start hour</label>
+              <input type="number" min={7} max={12} className={inputCls} value={patient.call_start_hour} onChange={(e) => setPatient((p) => ({ ...p, call_start_hour: Number(e.target.value) }))} />
             </div>
             <div>
-              <label className="block text-sm text-slate-600 mb-1">Family email</label>
-              <input type="email" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" value={patient.family_email} onChange={(e) => setPatient((p) => ({ ...p, family_email: e.target.value }))} />
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Family email</label>
+              <input type="email" className={inputCls} value={patient.family_email} onChange={(e) => setPatient((p) => ({ ...p, family_email: e.target.value }))} placeholder="family@example.com" />
             </div>
             <div>
-              <label className="block text-sm text-slate-600 mb-1">Family phone</label>
-              <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" value={patient.family_phone} onChange={(e) => setPatient((p) => ({ ...p, family_phone: e.target.value }))} />
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Family phone</label>
+              <input className={inputCls} value={patient.family_phone} onChange={(e) => setPatient((p) => ({ ...p, family_phone: e.target.value }))} placeholder="+91XXXXXXXXXX" />
             </div>
             <div className="col-span-2">
-              <label className="block text-sm text-slate-600 mb-1">Notes for care team</label>
-              <textarea rows={2} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" value={patient.notes} onChange={(e) => setPatient((p) => ({ ...p, notes: e.target.value }))} />
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Notes for care team</label>
+              <textarea rows={2} className={inputCls} value={patient.notes} onChange={(e) => setPatient((p) => ({ ...p, notes: e.target.value }))} placeholder="Any relevant clinical notes…" />
             </div>
           </div>
 
           <button
             onClick={() => setStep("tasks")}
             disabled={!patient.name || !patient.phone || !patient.cardiac_condition}
-            className="w-full py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-3 grad-bg text-white rounded-xl text-sm font-semibold hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
           >
             Next: Review tasks →
           </button>
@@ -231,30 +249,35 @@ export default function PlanBuilderPage() {
 
       {step === "tasks" && (
         <div className="space-y-4">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-slate-700">Recovery Plan Tasks</h2>
-              <button onClick={() => setStep("patient")} className="text-sm text-slate-400 hover:text-slate-600">← Back</button>
+          <div className="bg-white rounded-2xl border border-slate-200 p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Recovery Plan Tasks</h2>
+              <button onClick={() => setStep("patient")} className="text-sm text-[#006d8f] font-medium hover:text-[#005570] transition-colors">← Back</button>
             </div>
 
             {slots.map((slot) => {
               const slotTasks = tasks.map((t, i) => ({ ...t, _index: i })).filter((t) => t.call_slot === slot);
               return (
                 <div key={slot} className="mb-5">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">{SLOT_LABELS[slot]}</p>
+                  <p className="text-[10px] font-bold text-[#006d8f] uppercase tracking-widest mb-2.5">{SLOT_LABELS[slot]}</p>
                   <div className="space-y-2">
                     {slotTasks.map((t) => (
-                      <div key={t._index} className="flex items-center gap-2 text-sm">
+                      <div key={t._index} className="flex items-center gap-2">
                         <input
-                          className="flex-1 border border-slate-200 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-400"
+                          className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-[#006d8f] focus:ring-2 focus:ring-[#006d8f]/15 transition-colors"
                           value={t.task_name}
                           onChange={(e) => updateTask(t._index, "task_name", e.target.value)}
                         />
-                        <label className="flex items-center gap-1 text-xs text-slate-500 whitespace-nowrap">
-                          <input type="checkbox" checked={t.is_alert_trigger} onChange={(e) => updateTask(t._index, "is_alert_trigger", e.target.checked)} />
+                        <label className="flex items-center gap-1.5 text-xs text-slate-500 whitespace-nowrap cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={t.is_alert_trigger}
+                            onChange={(e) => updateTask(t._index, "is_alert_trigger", e.target.checked)}
+                            className="accent-[#006d8f]"
+                          />
                           alert
                         </label>
-                        <button onClick={() => removeTask(t._index)} className="text-slate-300 hover:text-red-400">
+                        <button onClick={() => removeTask(t._index)} className="text-slate-300 hover:text-rose-400 transition-colors">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                       </div>
@@ -264,17 +287,17 @@ export default function PlanBuilderPage() {
               );
             })}
 
-            <button onClick={addTask} className="text-sm text-blue-600 hover:underline">+ Add task</button>
+            <button onClick={addTask} className="text-sm text-[#006d8f] font-semibold hover:text-[#005570] transition-colors">+ Add task</button>
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-rose-600 font-medium">{error}</p>}
 
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="w-full py-3 grad-bg text-white rounded-xl text-sm font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
           >
-            {saving ? "Saving..." : "Save patient & plan"}
+            {saving ? "Saving…" : "Save patient & plan"}
           </button>
         </div>
       )}
