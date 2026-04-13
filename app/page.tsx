@@ -14,10 +14,6 @@ export default function Home() {
             </div>
             <span className="font-bold text-slate-900 text-[17px] tracking-tight">RehabReach</span>
           </div>
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#how" className="text-sm text-slate-500 hover:text-slate-900 transition-colors">How it works</a>
-            <a href="#features" className="text-sm text-slate-500 hover:text-slate-900 transition-colors">Features</a>
-          </div>
           <div className="flex items-center gap-3">
             <Link href="/patients" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
               Nurse Portal
