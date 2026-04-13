@@ -15,12 +15,12 @@ export default function Home() {
             <span className="font-bold text-slate-900 text-[17px] tracking-tight">RehabReach</span>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/patients" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
+            <Link href="/patients" className="text-sm font-semibold text-[#006d8f] border border-[#006d8f]/30 bg-[#e0f4fa] px-4 py-2 rounded-lg hover:bg-[#006d8f] hover:text-white transition-all">
               Nurse Portal
             </Link>
             <Link
               href="/dashboard"
-              className="text-sm font-semibold grad-bg text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+              className="text-sm font-semibold text-[#006d8f] border border-[#006d8f]/30 bg-[#e0f4fa] px-4 py-2 rounded-lg hover:bg-[#006d8f] hover:text-white transition-all"
             >
               Family Dashboard
             </Link>
