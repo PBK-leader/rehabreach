@@ -19,7 +19,7 @@ function buildSay(text: string, language: string): string {
   const voice = language === "hi" ? "Polly.Aditi" : "Polly.Joanna";
   // Strip [pause] tags — rely on natural speech rhythm instead
   const cleaned = text.replace(/\[pause\]/gi, " ").replace(/\s+/g, " ").trim();
-  return `<Say language="${lang}" voice="${voice}"><prosody rate="fast">${escapeXml(cleaned)}</prosody></Say>`;
+  return `<Say language="${lang}" voice="${voice}"><prosody rate="medium">${escapeXml(cleaned)}</prosody></Say>`;
 }
 
 export async function POST(req: NextRequest) {
