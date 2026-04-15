@@ -28,7 +28,6 @@ export async function POST(req: NextRequest) {
   const call_slot = searchParams.get("call_slot");
   const log_id = searchParams.get("log_id");
   const exchange_index = parseInt(searchParams.get("exchange") ?? "0");
-  const negative = searchParams.get("negative") === "1";
 
   if (!patient_id || !call_slot || !log_id) {
     return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response><Say>Sorry, there was a configuration error. Goodbye.</Say><Hangup/></Response>`);
@@ -63,16 +62,11 @@ export async function POST(req: NextRequest) {
       const firstQuestion = buildSay(exchanges[0].question as string, language);
       const gatherUrl = `${appUrl}/api/call-webhook/gather?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=0`;
       const webhookUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=0`;
-      return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${greetingSay}<Gather input="speech" language="${sttLang}" timeout="10" speechTimeout="auto" action="${escapeXml(gatherUrl)}" method="POST">${firstQuestion}<Pause length="2"/></Gather><Redirect method="POST">${escapeXml(webhookUrl)}</Redirect></Response>`);
+      return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${greetingSay}<Gather input="speech" language="${sttLang}" timeout="10" speechTimeout="3" enhanced="true" action="${escapeXml(gatherUrl)}" method="POST">${firstQuestion}<Pause length="2"/></Gather><Redirect method="POST">${escapeXml(webhookUrl)}</Redirect></Response>`);
     }
 
     const prevExchange = exchanges[exchange_index - 1];
-    const neutralEchoEN = "I understand. Thank you for letting me know. I have noted that.";
-    const neutralEchoHI = "Samajh gaya. Dhanyavaad batane ke liye. Maine note kar liya hai.";
-    const echoText = negative
-      ? (language === "hi" ? neutralEchoHI : neutralEchoEN)
-      : (prevExchange.confirmation_echo as string);
-    const echoSay = buildSay(echoText, language);
+    const echoSay = buildSay(prevExchange.confirmation_echo as string, language);
 
     if (exchange_index >= exchanges.length) {
       const closingSay = buildSay(script.closing as string, language);
@@ -83,7 +77,7 @@ export async function POST(req: NextRequest) {
     const nextQuestion = buildSay(exchanges[exchange_index].question as string, language);
     const gatherUrl = `${appUrl}/api/call-webhook/gather?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${exchange_index}`;
     const webhookUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${exchange_index}`;
-    return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${echoSay}<Gather input="speech" language="${sttLang}" timeout="10" speechTimeout="auto" action="${escapeXml(gatherUrl)}" method="POST">${nextQuestion}<Pause length="2"/></Gather><Redirect method="POST">${escapeXml(webhookUrl)}</Redirect></Response>`);
+    return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${echoSay}<Gather input="speech" language="${sttLang}" timeout="10" speechTimeout="3" enhanced="true" action="${escapeXml(gatherUrl)}" method="POST">${nextQuestion}<Pause length="2"/></Gather><Redirect method="POST">${escapeXml(webhookUrl)}</Redirect></Response>`);
 
   } catch (e) {
     console.error("call-webhook error:", e);

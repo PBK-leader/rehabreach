@@ -76,21 +76,10 @@ export async function POST(req: NextRequest) {
 </Response>`);
     }
 
-    // Check if this exchange is an alert trigger and patient's response sounds negative
-    const alertTrigger = exchange?.alert_trigger as boolean;
-    const NEGATIVE_KEYWORDS_EN = ["yes", "yeah", "high", "elevated", "pain", "hurt", "bad", "worse", "difficult", "hard", "no sleep", "couldn't sleep", "couldn't breathe"];
-    const NEGATIVE_KEYWORDS_HI = ["haan", "dard", "takleef", "bura", "zyada", "nahi soya", "zyada hai"];
-    const negativeKeywords = language === "hi" ? NEGATIVE_KEYWORDS_HI : NEGATIVE_KEYWORDS_EN;
-    const isNegativeResponse = negativeKeywords.some((kw) => speechResult.toLowerCase().includes(kw));
-
-    // Override confirmation_echo with a neutral acknowledgement if alert trigger + negative response
-    if (alertTrigger && isNegativeResponse) {
-      await supabase.from("call_logs").update({ severity_flag: "warning" }).eq("id", log_id);
-    }
-
-    // Advance to next exchange
+    // Advance to next exchange — always use the script's confirmation_echo.
+    // Interpretation (positive/negative/alert) is handled by parseCall after the call ends.
     const nextIndex = exchange_index + 1;
-    const nextUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${nextIndex}&negative=${alertTrigger && isNegativeResponse ? "1" : "0"}`;
+    const nextUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${nextIndex}`;
     return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response><Redirect method="POST">${escapeXml(nextUrl)}</Redirect></Response>`);
 
   } catch (e) {
