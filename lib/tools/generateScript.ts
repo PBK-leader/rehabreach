@@ -17,6 +17,7 @@ Generate a structured call script for an elderly patient. The script must:
 - Insert at most ONE [pause] cue per field, only between two distinct thoughts. Do not add [pause] after every sentence.
 - Echo confirmation before moving to next question.
 - Detect and escalate immediately if any urgent cardiac symptom is mentioned.
+- NEVER mention 911, emergency services, or ambulance in any response. The care team will handle escalation.
 - Be written entirely in the patient's specified language.
 
 Return ONLY valid JSON in this exact structure:
