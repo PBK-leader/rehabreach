@@ -43,7 +43,7 @@ export default function Home() {
             </h1>
 
             <p className="text-lg text-slate-500 leading-relaxed mb-8 max-w-md">
-              Automated AI voice calls check in with cardiac patients 4× daily. Responses are parsed, nurses alerted within seconds, families kept informed — all without manual effort.
+              Automated AI voice calls check in with cardiac patients 4x daily. Responses are parsed, nurses alerted within seconds, families kept informed. All without manual effort.
             </p>
 
             <div className="flex items-center gap-3">
@@ -152,7 +152,7 @@ export default function Home() {
               step: "01",
               emoji: "🏥",
               title: "Nurse sets the plan",
-              desc: "Select the cardiac condition — clinical task templates pre-populate. Add a patient in under 2 minutes.",
+              desc: "Select the cardiac condition. Clinical task templates pre-populate automatically. Add a patient in under 2 minutes.",
               color: "border-[#006d8f]/15 bg-[#e0f4fa]/30",
               num: "text-[#006d8f]/20",
             },
@@ -160,7 +160,7 @@ export default function Home() {
               step: "02",
               emoji: "📞",
               title: "AI calls the patient",
-              desc: "Warm, bilingual voice calls at 4 scheduled slots daily. Claude parses every response — meds, exercise, vitals, symptoms.",
+              desc: "Warm, bilingual voice calls at 4 scheduled slots daily. Claude parses every response: meds, exercise, vitals, and symptoms.",
               color: "border-cyan-200 bg-cyan-50/40",
               num: "text-cyan-200",
             },

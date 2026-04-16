@@ -210,7 +210,7 @@ export default function PlanBuilderPage() {
               ))}
             </div>
             {patient.cardiac_condition && (
-              <p className="text-xs text-emerald-600 font-medium mt-2">✓ Template loaded — {tasks.length} tasks pre-filled</p>
+              <p className="text-xs text-emerald-600 font-medium mt-2">✓ Template loaded - {tasks.length} tasks pre-filled</p>
             )}
           </div>
 

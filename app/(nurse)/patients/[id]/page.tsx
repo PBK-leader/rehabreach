@@ -83,13 +83,13 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
         {[
           {
             label: "7-day compliance",
-            value: pct !== null ? `${pct}%` : "—",
+            value: pct !== null ? `${pct}%` : "-",
             sub: pct !== null ? `${completed} of ${logs.length} calls` : "No calls yet",
             valueClass: pct === null ? "text-slate-300" : pct >= 80 ? "text-emerald-500" : pct >= 50 ? "text-amber-500" : "text-rose-500",
           },
           { label: "HR threshold", value: `${patient.heart_rate_threshold} bpm`, sub: "Alert trigger threshold", valueClass: "text-slate-800" },
           { label: "Call schedule", value: `${patient.call_start_hour}:00`, sub: patient.timezone, valueClass: "text-slate-800" },
-          { label: "Discharge date", value: patient.discharge_date ? new Date(patient.discharge_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—", sub: "Post-discharge monitoring", valueClass: "text-slate-800" },
+          { label: "Discharge date", value: patient.discharge_date ? new Date(patient.discharge_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "-", sub: "Post-discharge monitoring", valueClass: "text-slate-800" },
         ].map(({ label, value, sub, valueClass }) => (
           <div key={label} className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="w-6 h-1 rounded-full grad-bg mb-3" />
@@ -153,9 +153,9 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
                         }
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-slate-700">{log.call_type ? SLOT_LABELS[log.call_type] : "—"}</p>
+                        <p className="text-sm font-semibold text-slate-700">{log.call_type ? SLOT_LABELS[log.call_type] : "-"}</p>
                         <p className="text-xs text-slate-400">
-                          {log.called_at ? new Date(log.called_at).toLocaleString("en-GB", { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—"}
+                          {log.called_at ? new Date(log.called_at).toLocaleString("en-GB", { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "-"}
                         </p>
                       </div>
                     </div>
@@ -178,7 +178,7 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
                             {r.value_reported && <span className="text-slate-400 font-mono text-[11px] bg-slate-50 px-1.5 py-0.5 rounded">{r.value_reported}</span>}
                             {r.completed === true && <span className="text-emerald-600 font-bold">✓</span>}
                             {r.completed === false && <span className="text-rose-500 font-bold">✗</span>}
-                            {r.completed === null && <span className="text-slate-300">—</span>}
+                            {r.completed === null && <span className="text-slate-300">-</span>}
                             {r.alert_flag === "urgent" && <Chip label="Urgent" variant="red" />}
                             {r.alert_flag === "watch" && <Chip label="Watch" variant="amber" />}
                           </div>

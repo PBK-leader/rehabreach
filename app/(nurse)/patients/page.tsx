@@ -83,7 +83,7 @@ export default async function PatientsPage() {
         <div className="flex items-center gap-3 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">
           <span className="pulse-live w-2 h-2 bg-rose-500 rounded-full flex-shrink-0" />
           <p className="text-sm text-rose-700 font-semibold">
-            {urgentCount} patient{urgentCount > 1 ? "s" : ""} with urgent alerts — review immediately
+            {urgentCount} patient{urgentCount > 1 ? "s" : ""} with urgent alerts - review immediately
           </p>
         </div>
       )}

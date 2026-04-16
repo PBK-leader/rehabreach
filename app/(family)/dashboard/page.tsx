@@ -52,7 +52,7 @@ function CallCard({ log }: { log: CallLog }) {
           <div>
             <p className="text-sm font-semibold text-slate-800">{log.call_type ? SLOT_LABELS[log.call_type] : "Call"}</p>
             <p className="text-xs text-slate-400">
-              {log.called_at ? new Date(log.called_at).toLocaleString("en-GB", { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—"}
+              {log.called_at ? new Date(log.called_at).toLocaleString("en-GB", { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "-"}
             </p>
           </div>
         </div>
@@ -134,7 +134,7 @@ function PatientCard({ patient }: { patient: PatientWithLogs }) {
           {[
             { label: "Calls done", value: `${completed}/${logs.length}` },
             { label: "Missed", value: String(missed) },
-            { label: "Last check-in", value: logs[0]?.called_at ? new Date(logs[0].called_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }) : "—" },
+            { label: "Last check-in", value: logs[0]?.called_at ? new Date(logs[0].called_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }) : "-" },
           ].map(({ label, value }) => (
             <div key={label} className="bg-white/15 rounded-xl px-3 py-2.5">
               <p className="text-white/50 text-[10px] uppercase tracking-wide">{label}</p>
@@ -146,7 +146,7 @@ function PatientCard({ patient }: { patient: PatientWithLogs }) {
         {hasUrgent && (
           <div className="mt-3 flex items-center gap-2.5 bg-white/15 rounded-xl px-3 py-2.5">
             <span className="pulse-live w-2 h-2 bg-white rounded-full flex-shrink-0" />
-            <p className="text-white text-sm font-semibold">Urgent alert — care team has been notified</p>
+            <p className="text-white text-sm font-semibold">Urgent alert - care team has been notified</p>
           </div>
         )}
       </div>

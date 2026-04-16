@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RehabReach — Cardiac Recovery Platform",
+  title: "RehabReach: Cardiac Recovery Platform",
   description: "AI-powered post-surgery rehabilitation check-in and compliance dashboard",
 };
 
