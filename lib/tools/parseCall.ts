@@ -19,6 +19,7 @@ Rules:
 - completed = true if patient confirmed doing the task
 - completed = false if patient said they didn't do it
 - completed = null if unclear or not discussed
+- Transcript lines marked [low confidence: X.XX] or [conf: X.XX] indicate uncertain STT — treat these as completed = null unless the text is still clearly interpretable
 - alert_flag = "urgent" if ANY cardiac symptom: chest pain, pressure, shortness of breath at rest, near-fainting, severe confusion
 - alert_flag = "watch" if: missed 2+ meds, ankle swelling, poor sleep 3+ nights, exercise missed 2+ days
 - alert_flag = "normal" otherwise`;

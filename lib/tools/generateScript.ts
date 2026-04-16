@@ -14,11 +14,13 @@ Generate a structured call script for an elderly patient. The script must:
 - Use short sentences (under 12 words where possible).
 - Use the patient's first name ONLY in the greeting. Never repeat it elsewhere.
 - Ask a maximum of 1 question per exchange.
+- Questions MUST be answerable with a simple yes/no or a single number (e.g. heart rate). Avoid open-ended questions.
 - Insert at most ONE [pause] cue per field, only between two distinct thoughts. Do not add [pause] after every sentence.
 - Echo confirmation before moving to next question.
 - Detect and escalate immediately if any urgent cardiac symptom is mentioned.
 - NEVER mention 911, emergency services, or ambulance in any response. The care team will handle escalation.
 - Be written entirely in the patient's specified language.
+- For each exchange, include a "hints" array of 6–10 short words or phrases the patient is likely to say (used to improve speech recognition accuracy). Examples: ["yes", "no", "fine", "good", "pain", "dizzy", "took it", "missed it"].
 
 Return ONLY valid JSON in this exact structure:
 {
@@ -28,7 +30,8 @@ Return ONLY valid JSON in this exact structure:
   "exchanges": [
     {
       "task_name": "<task identifier>",
-      "question": "<what the AI asks>",
+      "question": "<what the AI asks — must be yes/no or a number>",
+      "hints": ["<word1>", "<word2>", "..."],
       "confirmation_echo": "<what AI says after patient confirms>",
       "alert_trigger": true | false,
       "alert_threshold": "<optional>",
