@@ -86,8 +86,6 @@ function CallCard({ log }: { log: CallLog }) {
                 </div>
               ))}
             </div>
-          ) : log.transcript ? (
-            <p className="text-xs text-slate-500 whitespace-pre-wrap leading-relaxed">{log.transcript}</p>
           ) : (
             <p className="text-xs text-slate-400 text-center py-2">Analysis in progress…</p>
           )}

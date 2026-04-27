@@ -32,15 +32,15 @@ export async function POST(req: NextRequest) {
     await supabase.from("call_logs").update({ status }).eq("id", log_id);
 
     if (status === "completed") {
-      // Auto-parse transcript in background
       const { data: log } = await supabase
         .from("call_logs")
-        .select("transcript, patient_id, call_type")
+        .select("transcript")
         .eq("id", log_id)
         .single();
 
       if (log?.transcript) {
-        parseCall(log_id).catch((e) => console.error("auto-parse error:", e));
+        // Await so Vercel doesn't kill the function before parsing finishes
+        await parseCall(log_id).catch((e) => console.error("auto-parse error:", e));
       }
     }
 

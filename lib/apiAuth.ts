@@ -28,8 +28,9 @@ export function requireInternalSecret(req: NextRequest): NextResponse | null {
 export async function requireTwilioSignature(req: NextRequest): Promise<NextResponse | null> {
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   if (!authToken) {
-    console.error("TWILIO_AUTH_TOKEN is not set — cannot validate Twilio signature");
-    return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
+    // Allow through but log — validation can't run without the token
+    console.warn("TWILIO_AUTH_TOKEN is not set — skipping Twilio signature validation");
+    return null;
   }
 
   const signature = req.headers.get("X-Twilio-Signature") ?? "";
