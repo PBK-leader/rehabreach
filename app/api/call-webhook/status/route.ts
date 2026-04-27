@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { parseCall } from "@/lib/tools/parseCall";
 import { makeCall } from "@/lib/tools/makeCall";
+import { requireTwilioSignature } from "@/lib/apiAuth";
 
 export async function POST(req: NextRequest) {
+  const deny = await requireTwilioSignature(req);
+  if (deny) return deny;
+
   const { searchParams } = new URL(req.url);
   const log_id = searchParams.get("log_id");
 

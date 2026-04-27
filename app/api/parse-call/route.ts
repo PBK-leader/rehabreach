@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseCall } from "@/lib/tools/parseCall";
+import { requireInternalSecret } from "@/lib/apiAuth";
 
 export async function POST(req: NextRequest) {
+  const deny = requireInternalSecret(req);
+  if (deny) return deny;
   try {
     const { log_id, dry_run } = await req.json();
     if (!log_id) {

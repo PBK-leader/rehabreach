@@ -1,7 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
+import { requireInternalSecret } from "@/lib/apiAuth";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const deny = requireInternalSecret(req);
+  if (deny) return deny;
   const results: Record<string, string> = {};
 
   // Check env vars (just presence, not values)

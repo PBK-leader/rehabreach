@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendAlert } from "@/lib/tools/sendAlert";
+import { requireInternalSecret } from "@/lib/apiAuth";
 
 export async function POST(req: NextRequest) {
+  const deny = requireInternalSecret(req);
+  if (deny) return deny;
   try {
     const { patient_id, reason, log_id, dry_run } = await req.json();
     if (!patient_id || !reason) {

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
+import { requireInternalSecret } from "@/lib/apiAuth";
 
 export async function POST(req: NextRequest) {
+  const deny = requireInternalSecret(req);
+  if (deny) return deny;
   try {
     const { patient, tasks } = await req.json();
 
