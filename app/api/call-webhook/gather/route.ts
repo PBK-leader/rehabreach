@@ -104,7 +104,8 @@ export async function POST(req: NextRequest) {
     const isUrgent = detectUrgent(speechResult, language);
 
     // Fire DB write + alert in background — don't await so TwiML is returned immediately
-    const bgWork = supabase.from("call_logs").update({ transcript: newTranscript }).eq("id", log_id);
+    void Promise.resolve(supabase.from("call_logs").update({ transcript: newTranscript }).eq("id", log_id))
+      .catch((e) => console.error("transcript update error:", e));
     if (isUrgent && exchange?.urgent_response) {
       fetch(`${appUrl}/api/alert`, {
         method: "POST",
@@ -112,7 +113,6 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({ patient_id, reason: "cardiac_symptom", log_id }),
       }).catch((e) => console.error("alert fetch error:", e));
     }
-    bgWork.catch((e) => console.error("transcript update error:", e));
 
     // Build next step directly — no redirect round-trip
     const nextIndex = exchange_index + 1;
@@ -125,8 +125,8 @@ export async function POST(req: NextRequest) {
 
     if (nextIndex >= exchanges.length) {
       // All questions done — play closing and hang up
-      const closingSay = say(script.closing as string, language);
-      supabase.from("call_logs").update({ status: "completed" }).eq("id", log_id)
+      const closingSay = say(script.closing as string, lang, voice);
+      void Promise.resolve(supabase.from("call_logs").update({ status: "completed" }).eq("id", log_id))
         .catch((e) => console.error("status update error:", e));
       return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${prefixSay}${closingSay}<Hangup/></Response>`);
     }
