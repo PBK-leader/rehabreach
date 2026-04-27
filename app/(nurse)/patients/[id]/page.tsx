@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase";
 import { Patient, Task, CallLog, CONDITION_LABELS, SLOT_LABELS } from "@/lib/types";
 import CallNowButton from "./CallNowButton";
+import ReparseButton from "./ReparseButton";
 
 export const revalidate = 0;
 
@@ -188,8 +189,9 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
                   )}
 
                   {log.transcript && !log.parsed_results && (
-                    <div className="px-4 py-2 border-t border-slate-100">
-                      <p className="text-xs text-slate-400 truncate">{log.transcript.slice(0, 130)}…</p>
+                    <div className="px-4 py-2 border-t border-slate-100 flex items-center justify-between">
+                      <p className="text-xs text-slate-400 truncate flex-1 mr-3">{log.transcript.slice(0, 100)}…</p>
+                      <ReparseButton logId={log.id} patientId={patient.id} />
                     </div>
                   )}
                 </div>
