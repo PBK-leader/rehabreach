@@ -44,7 +44,7 @@ function buildGather(
   gatherUrl: string, fallbackUrl: string
 ): string {
   const hintAttr = hints.length ? ` hints="${escapeXml(hints.join(","))}"` : "";
-  return `<Gather input="speech" language="${sttLang}" timeout="8" speechTimeout="1" enhanced="true"${hintAttr} action="${escapeXml(gatherUrl)}" method="POST">${say(questionText, lang, voice)}</Gather><Redirect method="POST">${escapeXml(fallbackUrl)}</Redirect>`;
+  return `<Gather input="speech" language="${sttLang}" timeout="8" speechTimeout="2" enhanced="true"${hintAttr} action="${escapeXml(gatherUrl)}" method="POST">${say(questionText, lang, voice)}</Gather><Redirect method="POST">${escapeXml(fallbackUrl)}</Redirect>`;
 }
 
 const CONFIDENCE_THRESHOLD = 0.55;
