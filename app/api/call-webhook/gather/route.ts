@@ -18,11 +18,9 @@ function detectUrgent(text: string, language: string): boolean {
   const lower = text.toLowerCase();
   const keywords = language === "hi" ? URGENT_KEYWORDS_HI : URGENT_KEYWORDS_EN;
   const negations = language === "hi" ? NEGATION_HI : NEGATION_EN;
-
   return keywords.some((kw) => {
     const idx = lower.indexOf(kw);
     if (idx === -1) return false;
-    // Check if any negation word appears in the 30 characters before the keyword
     const before = lower.slice(Math.max(0, idx - 30), idx);
     return !negations.some((neg) => before.includes(neg));
   });
@@ -32,11 +30,23 @@ function escapeXml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
 
+function say(text: string, lang: string, voice: string): string {
+  const cleaned = text.replace(/\[pause\]/gi, " ").replace(/\s+/g, " ").trim();
+  return `<Say language="${lang}" voice="${voice}"><prosody rate="medium">${escapeXml(cleaned)}</prosody></Say>`;
+}
+
 function twiml(xml: string) {
   return new NextResponse(xml, { headers: { "Content-Type": "text/xml" } });
 }
 
-// Minimum confidence to accept a response without re-asking
+function buildGather(
+  questionText: string, hints: string[], lang: string, voice: string, sttLang: string,
+  gatherUrl: string, fallbackUrl: string
+): string {
+  const hintAttr = hints.length ? ` hints="${escapeXml(hints.join(","))}"` : "";
+  return `<Gather input="speech" language="${sttLang}" timeout="8" speechTimeout="1" enhanced="true"${hintAttr} action="${escapeXml(gatherUrl)}" method="POST">${say(questionText, lang, voice)}</Gather><Redirect method="POST">${escapeXml(fallbackUrl)}</Redirect>`;
+}
+
 const CONFIDENCE_THRESHOLD = 0.55;
 
 export async function POST(req: NextRequest) {
@@ -72,65 +82,61 @@ export async function POST(req: NextRequest) {
     const voice = language === "hi" ? "Polly.Aditi" : "Polly.Joanna";
     const sttLang = language === "hi" ? "hi-IN" : "en-US";
 
-    // Re-ask once if: no speech captured OR confidence below threshold (and not already a retry)
+    // Re-ask once if confidence too low (and not already a retry)
     if (!retry && (speechResult.length === 0 || confidence < CONFIDENCE_THRESHOLD)) {
-      if (!exchange?.question) {
-        // No question to re-ask — just move on
-      } else {
-        const question = (exchange.question as string).replace(/\[pause\]/gi, " ").replace(/\s+/g, " ").trim();
+      if (exchange?.question) {
         const retryMsg = language === "hi"
           ? "Maafi kijiye, mujhe samajh nahi aaya. Kripaya dobara bataiye."
           : "Sorry, I did not catch that. Could you say that again?";
         const hints = (exchange.hints as string[] | undefined) ?? [];
-        const hintAttr = hints.length ? ` hints="${escapeXml(hints.join(","))}"` : "";
         const gatherUrl = `${appUrl}/api/call-webhook/gather?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${exchange_index}&retry=1`;
-        const webhookUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${exchange_index}`;
-        return twiml(`<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Say language="${lang}" voice="${voice}"><prosody rate="medium">${escapeXml(retryMsg)}</prosody></Say>
-  <Gather input="speech" language="${sttLang}" timeout="10" speechTimeout="3" enhanced="true"${hintAttr} action="${escapeXml(gatherUrl)}" method="POST">
-    <Say language="${lang}" voice="${voice}"><prosody rate="medium">${escapeXml(question)}</prosody></Say>
-    <Pause length="2"/>
-  </Gather>
-  <Redirect method="POST">${escapeXml(webhookUrl)}</Redirect>
-</Response>`);
+        const fallbackUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${exchange_index}`;
+        return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${say(retryMsg, lang, voice)}${buildGather(exchange.question as string, hints, lang, voice, sttLang, gatherUrl, fallbackUrl)}</Response>`);
       }
     }
 
-    // Append to transcript with confidence score
+    // Save transcript entry and fire alert in parallel — don't wait for either before responding
     const exchangeLabel = (exchange?.task_name as string) ?? `exchange_${exchange_index}`;
     const confidenceNote = confidence < CONFIDENCE_THRESHOLD ? ` [low confidence: ${confidence.toFixed(2)}]` : confidence < 0.80 ? ` [conf: ${confidence.toFixed(2)}]` : "";
     const existing = (log?.transcript as string) ?? "";
     const newTranscript = `${existing}\n[${exchangeLabel}] Patient: ${speechResult || "(no response)"}${confidenceNote}`.trim();
-    await supabase.from("call_logs").update({ transcript: newTranscript }).eq("id", log_id);
 
-    // Check for urgent symptoms — alert the nurse but continue asking all remaining questions
     const isUrgent = detectUrgent(speechResult, language);
+
+    // Fire DB write + alert in background — don't await so TwiML is returned immediately
+    const bgWork = supabase.from("call_logs").update({ transcript: newTranscript }).eq("id", log_id);
     if (isUrgent && exchange?.urgent_response) {
       fetch(`${appUrl}/api/alert`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.INTERNAL_API_SECRET ?? ""}`,
-        },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${process.env.INTERNAL_API_SECRET ?? ""}` },
         body: JSON.stringify({ patient_id, reason: "cardiac_symptom", log_id }),
       }).catch((e) => console.error("alert fetch error:", e));
+    }
+    bgWork.catch((e) => console.error("transcript update error:", e));
 
-      // Acknowledge the symptom, then continue to next question
-      const urgentText = (exchange.urgent_response as string).replace(/\[pause\]/gi, " ").replace(/\s+/g, " ").trim();
-      const nextIndex = exchange_index + 1;
-      const nextUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${nextIndex}`;
-      return twiml(`<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Say language="${lang}" voice="${voice}"><prosody rate="medium">${escapeXml(urgentText)}</prosody></Say>
-  <Redirect method="POST">${escapeXml(nextUrl)}</Redirect>
-</Response>`);
+    // Build next step directly — no redirect round-trip
+    const nextIndex = exchange_index + 1;
+    const echoText = (exchange?.confirmation_echo as string) ?? "";
+
+    // Urgent: say acknowledgement then continue
+    const prefixSay = isUrgent && exchange?.urgent_response
+      ? say(exchange.urgent_response as string, lang, voice)
+      : echoText ? say(echoText, lang, voice) : "";
+
+    if (nextIndex >= exchanges.length) {
+      // All questions done — play closing and hang up
+      const closingSay = say(script.closing as string, language);
+      supabase.from("call_logs").update({ status: "completed" }).eq("id", log_id)
+        .catch((e) => console.error("status update error:", e));
+      return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${prefixSay}${closingSay}<Hangup/></Response>`);
     }
 
-    // Advance to next exchange
-    const nextIndex = exchange_index + 1;
-    const nextUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${nextIndex}`;
-    return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response><Redirect method="POST">${escapeXml(nextUrl)}</Redirect></Response>`);
+    // Ask next question immediately
+    const nextExchange = exchanges[nextIndex];
+    const nextHints = (nextExchange?.hints as string[] | undefined) ?? [];
+    const gatherUrl = `${appUrl}/api/call-webhook/gather?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${nextIndex}`;
+    const fallbackUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${nextIndex}`;
+    return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${prefixSay}${buildGather(nextExchange.question as string, nextHints, lang, voice, sttLang, gatherUrl, fallbackUrl)}</Response>`);
 
   } catch (e) {
     console.error("gather error:", e);
