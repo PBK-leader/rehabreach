@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
-import { requireTwilioSignature } from "@/lib/apiAuth";
 
 function twiml(xml: string) {
   return new NextResponse(xml, { headers: { "Content-Type": "text/xml" } });
@@ -24,9 +23,6 @@ function buildSay(text: string, language: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  const deny = await requireTwilioSignature(req);
-  if (deny) return deny;
-
   const { searchParams } = new URL(req.url);
   const patient_id = searchParams.get("patient_id");
   const call_slot = searchParams.get("call_slot");
