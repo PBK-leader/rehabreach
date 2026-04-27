@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CONDITION_LABELS, CardiacCondition, CallSlot } from "@/lib/types";
+import { savePatient } from "./actions";
 
 const SLOT_LABELS: Record<CallSlot, string> = {
   morning: "Morning check-in",
@@ -122,21 +123,11 @@ export default function PlanBuilderPage() {
     }
     setSaving(true);
     setError("");
-    try {
-      const res = await fetch("/api/patients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ patient, tasks }),
-      });
-      if (!res.ok) {
-        const body = await res.json();
-        throw new Error(body.error ?? "Save failed");
-      }
-      const { patient_id } = await res.json();
-      router.push(`/patients/${patient_id}`);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Unknown error");
-    } finally {
+    const res = await savePatient(patient, tasks);
+    if (res.ok) {
+      router.push(`/patients/${res.patient_id}`);
+    } else {
+      setError(res.error);
       setSaving(false);
     }
   }
