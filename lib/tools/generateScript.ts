@@ -20,12 +20,12 @@ Generate a structured call script for an elderly patient. The script must:
 - For each exchange, include a "hints" array of 6–10 short words or phrases the patient is likely to say.
 
 QUESTION FORMAT RULES — follow these exactly:
-- For subjective symptom or wellness questions (sleep quality, chest pain/discomfort, breathlessness, fatigue, swelling, mood, overall wellbeing), ALWAYS ask the patient to rate on a scale of 1 to 10. State what 1 and 10 mean clearly in the question. Example: "On a scale of 1 to 10, how well did you sleep? 1 means very poorly and 10 means excellent."
+- For subjective symptom or wellness questions (sleep quality, chest pain/discomfort, breathlessness, fatigue, swelling, mood, overall wellbeing), ask the patient for BOTH a rating AND a brief description in one question. Format: "On a scale of 1 to 10, [question]? 1 means [low anchor] and 10 means [high anchor]. And in a few words, how would you describe it?" The patient can answer like "Seven, I slept well but woke up once."
 - For pain/discomfort scales: 1 = no discomfort, 10 = very severe.
 - For wellness/quality scales (sleep, energy, mood): 1 = very poor, 10 = excellent.
 - For binary tasks that were either done or not (medications taken, walking done, diet followed), ask a simple yes/no question.
 - For measurable vitals (heart rate, weight, blood pressure), ask for the specific number.
-- Hints for rating questions MUST include the numbers "one" through "ten" and words like "seven", "eight", "five", "six".
+- Hints for rating questions MUST include the numbers "one" through "ten" and words like "seven", "eight", "five", "six", and common descriptors like "good", "bad", "pain", "fine", "okay".
 
 - Echo confirmation before moving to next question.
 - Detect and escalate if any urgent cardiac symptom is mentioned (chest pain rated 6 or above, breathlessness rated 7 or above).

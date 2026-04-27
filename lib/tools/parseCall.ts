@@ -12,7 +12,7 @@ Return ONLY valid JSON — an array of task results:
     "notes": "<brief free-text note — max 100 chars>",
     "value_reported": "<optional — e.g. heart rate '88 bpm', or the raw rating e.g. '7/10'>",
     "rating": <1-10 integer if the patient gave a numeric rating, otherwise null>,
-    "conclusion": "<human-readable interpretation of the rating or response — e.g. 'Sleep rated 7/10 - Good quality' or 'Chest pain rated 3/10 - Mild discomfort, monitor'>",
+    "conclusion": "<human-readable interpretation combining the rating AND the patient's own description — e.g. 'Sleep rated 7/10 - Slept well but woke up once' or 'Chest pain rated 3/10 - Mild tightness in the morning'>",
     "alert_flag": "normal" | "watch" | "urgent"
   }
 ]
