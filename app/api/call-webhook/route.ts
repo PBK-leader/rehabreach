@@ -82,7 +82,8 @@ export async function POST(req: NextRequest) {
 
     const nextQuestion = buildSay(exchanges[exchange_index].question as string, language);
     const gatherUrl = `${appUrl}/api/call-webhook/gather?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${exchange_index}`;
-    const webhookUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${exchange_index}`;
+    // Fallback advances to next exchange so a timeout never loops the same question
+    const webhookUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${exchange_index + 1}`;
     return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${echoSay}<Gather ${gatherAttrs(exchange_index)} action="${escapeXml(gatherUrl)}" method="POST">${nextQuestion}<Pause length="2"/></Gather><Redirect method="POST">${escapeXml(webhookUrl)}</Redirect></Response>`);
 
   } catch (e) {

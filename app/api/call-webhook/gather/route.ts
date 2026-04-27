@@ -46,7 +46,7 @@ function buildGather(
   return `<Gather input="speech" language="${sttLang}" timeout="8" speechTimeout="2" enhanced="true"${hintAttr} action="${escapeXml(gatherUrl)}" method="POST">${say(questionText, lang, voice)}</Gather><Redirect method="POST">${escapeXml(fallbackUrl)}</Redirect>`;
 }
 
-const CONFIDENCE_THRESHOLD = 0.55;
+const CONFIDENCE_THRESHOLD = 0.35;
 
 export async function POST(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -78,15 +78,15 @@ export async function POST(req: NextRequest) {
     const voice = language === "hi" ? "Polly.Aditi" : "Polly.Joanna";
     const sttLang = language === "hi" ? "hi-IN" : "en-US";
 
-    // Re-ask once if confidence too low (and not already a retry)
-    if (!retry && (speechResult.length === 0 || confidence < CONFIDENCE_THRESHOLD)) {
+    // Re-ask only if NO speech was captured at all (not on low confidence — short answers like "5" or "seven" score low)
+    if (!retry && speechResult.length === 0) {
       if (exchange?.question) {
         const retryMsg = language === "hi"
           ? "Maafi kijiye, mujhe samajh nahi aaya. Kripaya dobara bataiye."
-          : "Sorry, I did not catch that. Could you say that again?";
+          : "Sorry, I did not catch that. Could you please repeat that?";
         const hints = (exchange.hints as string[] | undefined) ?? [];
         const gatherUrl = `${appUrl}/api/call-webhook/gather?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${exchange_index}&retry=1`;
-        const fallbackUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${exchange_index}`;
+        const fallbackUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${exchange_index + 1}`;
         return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${say(retryMsg, lang, voice)}${buildGather(exchange.question as string, hints, lang, voice, sttLang, gatherUrl, fallbackUrl)}</Response>`);
       }
     }
