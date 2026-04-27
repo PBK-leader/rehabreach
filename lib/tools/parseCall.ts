@@ -10,18 +10,29 @@ Return ONLY valid JSON — an array of task results:
     "task_name": "<task identifier>",
     "completed": true | false | null,
     "notes": "<brief free-text note — max 100 chars>",
-    "value_reported": "<optional — e.g. heart rate '88 bpm'>",
+    "value_reported": "<optional — e.g. heart rate '88 bpm', or the raw rating e.g. '7/10'>",
+    "rating": <1-10 integer if the patient gave a numeric rating, otherwise null>,
+    "conclusion": "<human-readable interpretation of the rating or response — e.g. 'Sleep rated 7/10 - Good quality' or 'Chest pain rated 3/10 - Mild discomfort, monitor'>",
     "alert_flag": "normal" | "watch" | "urgent"
   }
 ]
 
 Rules:
-- completed = true if patient confirmed doing the task
-- completed = false if patient said they didn't do it
+- completed = true if patient confirmed doing the task or gave a rating indicating acceptable status
+- completed = false if patient said they didn't do it or the rating indicates a significant problem
 - completed = null if unclear or not discussed
-- Transcript lines marked [low confidence: X.XX] or [conf: X.XX] indicate uncertain STT — treat these as completed = null unless the text is still clearly interpretable
-- alert_flag = "urgent" if ANY cardiac symptom: chest pain, pressure, shortness of breath at rest, near-fainting, severe confusion
-- alert_flag = "watch" if: missed 2+ meds, ankle swelling, poor sleep 3+ nights, exercise missed 2+ days
+- Transcript lines marked [low confidence: X.XX] or [conf: X.XX] — treat as completed = null unless clearly interpretable
+
+Rating interpretation guidelines (use for conclusion and alert_flag):
+- Sleep quality (higher = better): 1-3 Poor (watch), 4-6 Fair (normal), 7-10 Good (normal)
+- Chest pain/discomfort (higher = worse): 1-2 None/minimal (normal), 3-5 Mild (watch), 6-8 Moderate (urgent), 9-10 Severe (urgent)
+- Breathlessness (higher = worse): 1-3 Minimal (normal), 4-6 Moderate (watch), 7-10 Severe (urgent)
+- Fatigue/energy (higher = better): 1-3 Very fatigued (watch), 4-6 Moderate (normal), 7-10 Good energy (normal)
+- Overall wellbeing (higher = better): 1-3 Poor (watch), 4-6 Moderate (normal), 7-10 Good (normal)
+- Swelling/oedema (higher = worse): 1-3 Minimal (normal), 4-6 Moderate (watch), 7-10 Severe (urgent)
+
+- alert_flag = "urgent" if: chest pain rated 6+, breathlessness rated 7+, swelling rated 7+, or any direct cardiac symptom mentioned
+- alert_flag = "watch" if: sleep rated 1-3, fatigue rated 1-3, chest pain rated 3-5, breathlessness rated 4-6, missed 2+ medications
 - alert_flag = "normal" otherwise`;
 
 export async function parseCall(logId: string, dryRun = false): Promise<object[]> {

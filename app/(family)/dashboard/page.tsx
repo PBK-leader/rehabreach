@@ -73,15 +73,21 @@ function CallCard({ log }: { log: CallLog }) {
             <div className="space-y-3">
               {results.map((r, i) => (
                 <div key={i} className="flex items-start justify-between gap-4">
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-700 capitalize">{r.task_name.replace(/_/g, " ")}</p>
-                    {r.notes && <p className="text-xs text-slate-400 mt-0.5">{r.notes}</p>}
-                    {r.value_reported && <p className="text-xs font-mono text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-200 inline-block mt-1">{r.value_reported}</p>}
+                    {r.conclusion && <p className="text-xs text-slate-500 mt-0.5">{r.conclusion}</p>}
+                    {!r.conclusion && r.notes && <p className="text-xs text-slate-400 mt-0.5">{r.notes}</p>}
+                    {!r.conclusion && !r.notes && r.value_reported && <p className="text-xs font-mono text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-200 inline-block mt-1">{r.value_reported}</p>}
                   </div>
                   <div className="flex-shrink-0 flex items-center gap-1.5 pt-0.5">
-                    {r.completed === true && <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full font-semibold">Done ✓</span>}
-                    {r.completed === false && <span className="text-xs bg-red-50 text-red-600 px-2.5 py-0.5 rounded-full font-semibold">Missed</span>}
-                    {r.completed === null && <span className="text-xs bg-slate-100 text-slate-400 px-2.5 py-0.5 rounded-full">Unclear</span>}
+                    {r.rating != null && (
+                      <span className={`text-sm font-bold px-2.5 py-0.5 rounded-full ${(r as ParsedResult).alert_flag === "urgent" ? "bg-rose-100 text-rose-600" : (r as ParsedResult).alert_flag === "watch" ? "bg-amber-100 text-amber-600" : "bg-emerald-50 text-emerald-700"}`}>
+                        {r.rating}/10
+                      </span>
+                    )}
+                    {r.rating == null && r.completed === true && <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full font-semibold">Done ✓</span>}
+                    {r.rating == null && r.completed === false && <span className="text-xs bg-red-50 text-red-600 px-2.5 py-0.5 rounded-full font-semibold">Missed</span>}
+                    {r.rating == null && r.completed === null && <span className="text-xs bg-slate-100 text-slate-400 px-2.5 py-0.5 rounded-full">Unclear</span>}
                   </div>
                 </div>
               ))}

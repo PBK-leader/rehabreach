@@ -14,14 +14,21 @@ Generate a structured call script for an elderly patient. The script must:
 - Use short sentences (under 12 words where possible).
 - Use the patient's first name ONLY in the greeting. Never repeat it elsewhere.
 - Ask a maximum of 1 question per exchange.
-- Questions MUST be answerable with a simple yes/no or a single number (e.g. heart rate). Avoid open-ended questions.
-- Insert at most ONE [pause] cue per field, only between two distinct thoughts. Do not add [pause] after every sentence.
-- Echo confirmation before moving to next question.
-- Detect and escalate immediately if any urgent cardiac symptom is mentioned.
-- NEVER mention 911, emergency services, or ambulance in any response. The care team will handle escalation.
 - NEVER say "please stay on the line", "don't hang up", "hold on", or any phrase asking the patient to wait. The call continues automatically.
+- NEVER mention 911, emergency services, or ambulance in any response. The care team will handle escalation.
 - Be written entirely in the patient's specified language.
-- For each exchange, include a "hints" array of 6–10 short words or phrases the patient is likely to say (used to improve speech recognition accuracy). Examples: ["yes", "no", "fine", "good", "pain", "dizzy", "took it", "missed it"].
+- For each exchange, include a "hints" array of 6–10 short words or phrases the patient is likely to say.
+
+QUESTION FORMAT RULES — follow these exactly:
+- For subjective symptom or wellness questions (sleep quality, chest pain/discomfort, breathlessness, fatigue, swelling, mood, overall wellbeing), ALWAYS ask the patient to rate on a scale of 1 to 10. State what 1 and 10 mean clearly in the question. Example: "On a scale of 1 to 10, how well did you sleep? 1 means very poorly and 10 means excellent."
+- For pain/discomfort scales: 1 = no discomfort, 10 = very severe.
+- For wellness/quality scales (sleep, energy, mood): 1 = very poor, 10 = excellent.
+- For binary tasks that were either done or not (medications taken, walking done, diet followed), ask a simple yes/no question.
+- For measurable vitals (heart rate, weight, blood pressure), ask for the specific number.
+- Hints for rating questions MUST include the numbers "one" through "ten" and words like "seven", "eight", "five", "six".
+
+- Echo confirmation before moving to next question.
+- Detect and escalate if any urgent cardiac symptom is mentioned (chest pain rated 6 or above, breathlessness rated 7 or above).
 
 Return ONLY valid JSON in this exact structure:
 {

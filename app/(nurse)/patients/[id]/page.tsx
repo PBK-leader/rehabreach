@@ -22,7 +22,7 @@ async function getData(id: string) {
   };
 }
 
-type PR = { task_name: string; completed: boolean | null; notes: string; value_reported?: string; alert_flag: string };
+type PR = { task_name: string; completed: boolean | null; notes: string; value_reported?: string; rating?: number | null; conclusion?: string | null; alert_flag: string };
 
 function Chip({ label, variant }: { label: string; variant: "teal" | "green" | "red" | "amber" | "slate" }) {
   const map = {
@@ -171,18 +171,25 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
 
                   {/* Parsed results */}
                   {log.parsed_results && (log.parsed_results as PR[]).length > 0 && (
-                    <div className="px-4 py-3 space-y-2">
+                    <div className="px-4 py-3 space-y-2.5">
                       {(log.parsed_results as PR[]).map((r, i) => (
-                        <div key={i} className="flex items-center justify-between text-xs gap-4">
-                          <span className="text-slate-500 capitalize">{r.task_name.replace(/_/g, " ")}</span>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            {r.value_reported && <span className="text-slate-400 font-mono text-[11px] bg-slate-50 px-1.5 py-0.5 rounded">{r.value_reported}</span>}
-                            {r.completed === true && <span className="text-emerald-600 font-bold">✓</span>}
-                            {r.completed === false && <span className="text-rose-500 font-bold">✗</span>}
-                            {r.completed === null && <span className="text-slate-300">-</span>}
-                            {r.alert_flag === "urgent" && <Chip label="Urgent" variant="red" />}
-                            {r.alert_flag === "watch" && <Chip label="Watch" variant="amber" />}
+                        <div key={i} className="text-xs">
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="text-slate-500 capitalize font-medium">{r.task_name.replace(/_/g, " ")}</span>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              {r.rating != null && (
+                                <span className={`font-bold px-2 py-0.5 rounded-full text-[11px] ${r.alert_flag === "urgent" ? "bg-rose-100 text-rose-600" : r.alert_flag === "watch" ? "bg-amber-100 text-amber-600" : "bg-emerald-50 text-emerald-600"}`}>
+                                  {r.rating}/10
+                                </span>
+                              )}
+                              {!r.rating && r.value_reported && <span className="text-slate-400 font-mono text-[11px] bg-slate-50 px-1.5 py-0.5 rounded">{r.value_reported}</span>}
+                              {r.completed === true && !r.rating && <span className="text-emerald-600 font-bold">✓</span>}
+                              {r.completed === false && <span className="text-rose-500 font-bold">✗</span>}
+                              {r.alert_flag === "urgent" && <Chip label="Urgent" variant="red" />}
+                              {r.alert_flag === "watch" && <Chip label="Watch" variant="amber" />}
+                            </div>
                           </div>
+                          {r.conclusion && <p className="text-slate-400 mt-0.5">{r.conclusion}</p>}
                         </div>
                       ))}
                     </div>

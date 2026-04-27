@@ -46,6 +46,8 @@ export interface ParsedResult {
   completed: boolean | null;
   notes: string;
   value_reported: string | null;
+  rating: number | null;
+  conclusion: string | null;
   alert_flag: SeverityFlag;
 }
 
