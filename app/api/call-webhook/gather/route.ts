@@ -11,10 +11,21 @@ const URGENT_KEYWORDS_HI = [
   "seene mein dard", "sans nahi", "saans nahi", "chakkar", "behosh", "gir gaya", "gir gayi",
 ];
 
+const NEGATION_EN = ["no ", "not ", "don't have ", "do not have ", "without ", "didn't ", "did not ", "none ", "never "];
+const NEGATION_HI = ["nahi ", "nahin ", "koi nahi", "nahi hai", "bilkul nahi"];
+
 function detectUrgent(text: string, language: string): boolean {
   const lower = text.toLowerCase();
   const keywords = language === "hi" ? URGENT_KEYWORDS_HI : URGENT_KEYWORDS_EN;
-  return keywords.some((kw) => lower.includes(kw));
+  const negations = language === "hi" ? NEGATION_HI : NEGATION_EN;
+
+  return keywords.some((kw) => {
+    const idx = lower.indexOf(kw);
+    if (idx === -1) return false;
+    // Check if any negation word appears in the 30 characters before the keyword
+    const before = lower.slice(Math.max(0, idx - 30), idx);
+    return !negations.some((neg) => before.includes(neg));
+  });
 }
 
 function escapeXml(text: string): string {
