@@ -104,22 +104,26 @@ export async function POST(req: NextRequest) {
     const newTranscript = `${existing}\n[${exchangeLabel}] Patient: ${speechResult || "(no response)"}${confidenceNote}`.trim();
     await supabase.from("call_logs").update({ transcript: newTranscript }).eq("id", log_id);
 
-    // Check for urgent symptoms
+    // Check for urgent symptoms — alert the nurse but continue asking all remaining questions
     const isUrgent = detectUrgent(speechResult, language);
     if (isUrgent && exchange?.urgent_response) {
-      await fetch(`${appUrl}/api/alert`, {
+      fetch(`${appUrl}/api/alert`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${process.env.INTERNAL_API_SECRET ?? ""}`,
         },
         body: JSON.stringify({ patient_id, reason: "cardiac_symptom", log_id }),
-      });
+      }).catch((e) => console.error("alert fetch error:", e));
+
+      // Acknowledge the symptom, then continue to next question
       const urgentText = (exchange.urgent_response as string).replace(/\[pause\]/gi, " ").replace(/\s+/g, " ").trim();
+      const nextIndex = exchange_index + 1;
+      const nextUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=${nextIndex}`;
       return twiml(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say language="${lang}" voice="${voice}"><prosody rate="medium">${escapeXml(urgentText)}</prosody></Say>
-  <Hangup/>
+  <Redirect method="POST">${escapeXml(nextUrl)}</Redirect>
 </Response>`);
     }
 
