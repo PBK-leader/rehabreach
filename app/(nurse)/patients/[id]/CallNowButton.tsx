@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CallSlot, SLOT_LABELS } from "@/lib/types";
+import { placeCall } from "./actions";
 
 const SLOTS: CallSlot[] = ["morning", "medication", "exercise", "evening"];
 
@@ -13,20 +14,9 @@ export default function CallNowButton({ patientId }: { patientId: string }) {
   async function handleCall() {
     setLoading(true);
     setResult(null);
-    try {
-      const res = await fetch("/api/make-call", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ patient_id: patientId, call_slot: slot }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Call failed");
-      setResult(`Call placed ✓`);
-    } catch (e) {
-      setResult(e instanceof Error ? e.message : "Error placing call");
-    } finally {
-      setLoading(false);
-    }
+    const res = await placeCall(patientId, slot);
+    setResult(res.ok ? "Call placed ✓" : res.error);
+    setLoading(false);
   }
 
   return (

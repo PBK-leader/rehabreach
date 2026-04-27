@@ -34,17 +34,18 @@ export async function requireTwilioSignature(req: NextRequest): Promise<NextResp
 
   const signature = req.headers.get("X-Twilio-Signature") ?? "";
 
-  // Reconstruct the full URL exactly as Twilio signed it
-  const url = req.url;
+  // Build the URL as Twilio signed it: use the configured app URL as base
+  // (req.url has an internal Vercel hostname that doesn't match Twilio's signed URL)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const { pathname, search } = new URL(req.url);
+  const url = `${appUrl}${pathname}${search}`;
 
   // Collect POST body params for form-encoded requests
-  let params: Record<string, string> = {};
+  const params: Record<string, string> = {};
   const contentType = req.headers.get("content-type") ?? "";
   if (contentType.includes("application/x-www-form-urlencoded")) {
-    // Clone so we don't consume the body stream
     const text = await req.clone().text();
-    const formData = new URLSearchParams(text);
-    formData.forEach((value, key) => { params[key] = value; });
+    new URLSearchParams(text).forEach((value, key) => { params[key] = value; });
   }
 
   const valid = twilio.validateRequest(authToken, signature, url, params);
