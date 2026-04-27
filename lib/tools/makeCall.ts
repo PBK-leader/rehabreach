@@ -4,27 +4,6 @@ import { generateScript } from "./generateScript";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-async function synthesiseAudio(text: string, language: string): Promise<Buffer> {
-  const voiceId = language === "hi"
-    ? process.env.ELEVENLABS_VOICE_ID_HI!
-    : process.env.ELEVENLABS_VOICE_ID_EN!;
-
-  const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-    method: "POST",
-    headers: { "xi-api-key": process.env.ELEVENLABS_API_KEY!, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      text,
-      model_id: "eleven_multilingual_v2",
-      voice_settings: { stability: 0.75, similarity_boost: 0.85, style: 0.2, use_speaker_boost: true },
-    }),
-  });
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}));
-    throw new Error(`ElevenLabs error ${resp.status}: ${JSON.stringify(err)}`);
-  }
-  return Buffer.from(await resp.arrayBuffer());
-}
-
 export async function makeCall(
   patientId: string,
   callSlot: string,
@@ -54,9 +33,6 @@ export async function makeCall(
       exchanges: exchanges?.length ?? 0,
     };
   }
-
-  // Test ElevenLabs synthesis with greeting
-  await synthesiseAudio(script.greeting as string, language);
 
   // Log call attempt
   const { data: logData, error: insertError } = await supabase
