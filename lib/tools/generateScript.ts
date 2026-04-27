@@ -19,6 +19,7 @@ Generate a structured call script for an elderly patient. The script must:
 - Echo confirmation before moving to next question.
 - Detect and escalate immediately if any urgent cardiac symptom is mentioned.
 - NEVER mention 911, emergency services, or ambulance in any response. The care team will handle escalation.
+- NEVER say "please stay on the line", "don't hang up", "hold on", or any phrase asking the patient to wait. The call continues automatically.
 - Be written entirely in the patient's specified language.
 - For each exchange, include a "hints" array of 6–10 short words or phrases the patient is likely to say (used to improve speech recognition accuracy). Examples: ["yes", "no", "fine", "good", "pain", "dizzy", "took it", "missed it"].
 
