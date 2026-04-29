@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { parseCall } from "@/lib/tools/parseCall";
-import { makeCall } from "@/lib/tools/makeCall";
 
 export async function POST(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -36,21 +35,6 @@ export async function POST(req: NextRequest) {
 
       if (log?.transcript) {
         await parseCall(log_id).catch((e) => console.error("auto-parse error:", e));
-      }
-    }
-
-    if (status === "no_answer") {
-      const { data: log } = await supabase
-        .from("call_logs")
-        .select("retry_of, patient_id, call_type")
-        .eq("id", log_id)
-        .single();
-
-      if (log && !log.retry_of) {
-        setTimeout(() => {
-          makeCall(log.patient_id, log.call_type ?? "morning", false, log_id)
-            .catch((e) => console.error("retry call error:", e));
-        }, 30 * 60 * 1000);
       }
     }
 

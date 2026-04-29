@@ -67,7 +67,8 @@ export async function POST(req: NextRequest) {
       }
       const firstQuestion = buildSay(exchanges[0].question as string, language);
       const gatherUrl = `${appUrl}/api/call-webhook/gather?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=0`;
-      const webhookUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=0`;
+      // Fallback advances to exchange=1 so silence on the first question never loops
+      const webhookUrl = `${appUrl}/api/call-webhook?patient_id=${patient_id}&call_slot=${call_slot}&log_id=${log_id}&exchange=1`;
       return twiml(`<?xml version="1.0" encoding="UTF-8"?><Response>${greetingSay}<Gather ${gatherAttrs(0)} action="${escapeXml(gatherUrl)}" method="POST">${firstQuestion}<Pause length="2"/></Gather><Redirect method="POST">${escapeXml(webhookUrl)}</Redirect></Response>`);
     }
 

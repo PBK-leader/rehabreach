@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateScript } from "@/lib/tools/generateScript";
+import { requireInternalSecret } from "@/lib/apiAuth";
 
 export async function POST(req: NextRequest) {
+  const deny = requireInternalSecret(req);
+  if (deny) return deny;
   try {
     const { patient_id, call_slot } = await req.json();
     if (!patient_id || !call_slot) {
