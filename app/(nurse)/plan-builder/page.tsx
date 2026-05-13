@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CONDITION_LABELS, CardiacCondition, CallSlot } from "@/lib/types";
 import { savePatient, updatePatient } from "./actions";
@@ -76,7 +76,7 @@ const TASK_TEMPLATES: Record<CardiacCondition, Array<{ task_name: string; task_t
 
 type TaskDraft = typeof TASK_TEMPLATES.cabg[0];
 
-export default function PlanBuilderPage() {
+function PlanBuilderPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editingId = searchParams.get("patient_id");
@@ -355,5 +355,19 @@ export default function PlanBuilderPage() {
         </div>
       )}
     </div>
+  );
+}
+
+const spinner = (
+  <div className="max-w-2xl flex items-center justify-center py-24">
+    <div className="w-6 h-6 border-2 border-slate-200 border-t-[#006d8f] rounded-full animate-spin" />
+  </div>
+);
+
+export default function PlanBuilderPageWrapper() {
+  return (
+    <Suspense fallback={spinner}>
+      <PlanBuilderPage />
+    </Suspense>
   );
 }
