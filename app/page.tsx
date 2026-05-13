@@ -48,7 +48,7 @@ export default function Home() {
             </h1>
 
             <p className="text-lg text-slate-500 leading-relaxed mb-8 max-w-md">
-              RehabReach gives hospitals and outpatient clinics an AI voice agent that checks in with cardiac patients 4x daily, flags symptoms instantly, and keeps families informed - without adding a single hour to your team's workload.
+              RehabReach gives hospitals and outpatient clinics an AI voice agent that checks in with cardiac patients 4x daily, flags symptoms instantly, and keeps families informed - without adding a single hour to your team&apos;s workload.
             </p>
 
             <div className="flex items-center gap-3 mb-6">

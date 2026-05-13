@@ -157,7 +157,7 @@ function PatientCard({ patient }: { patient: PatientWithLogs }) {
 
       {/* Call cards */}
       <div className="px-5 py-5">
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">This week's calls</p>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">This week&apos;s calls</p>
         {logs.length === 0 ? (
           <p className="text-sm text-slate-400 text-center py-6">No calls yet this week</p>
         ) : (
