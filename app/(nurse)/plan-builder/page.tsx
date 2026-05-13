@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CONDITION_LABELS, CardiacCondition, CallSlot } from "@/lib/types";
-import { savePatient } from "./actions";
+import { savePatient, updatePatient } from "./actions";
+import { createBrowserClient } from "@/lib/supabase";
 
 const SLOT_LABELS: Record<CallSlot, string> = {
   morning: "Morning check-in",
@@ -77,8 +78,11 @@ type TaskDraft = typeof TASK_TEMPLATES.cabg[0];
 
 export default function PlanBuilderPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editingId = searchParams.get("patient_id");
   const [step, setStep] = useState<"patient" | "tasks">("patient");
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(!!editingId);
   const [error, setError] = useState("");
 
   const [patient, setPatient] = useState({
@@ -98,6 +102,54 @@ export default function PlanBuilderPage() {
   });
 
   const [tasks, setTasks] = useState<TaskDraft[]>([]);
+
+  useEffect(() => {
+    if (!editingId) return;
+    const supabase = createBrowserClient();
+    (async () => {
+      const { data: p } = await supabase.from("patients").select("*").eq("id", editingId).single();
+      if (p) {
+        setPatient({
+          name: p.name ?? "",
+          phone: p.phone ?? "",
+          date_of_birth: p.date_of_birth ?? "",
+          discharge_date: p.discharge_date ?? "",
+          cardiac_condition: p.cardiac_condition ?? "",
+          language: p.language ?? "en",
+          family_email: p.family_email ?? "",
+          family_phone: p.family_phone ?? "",
+          heart_rate_threshold: p.heart_rate_threshold ?? 100,
+          call_start_hour: p.call_start_hour ?? 8,
+          timezone: p.timezone ?? "UTC",
+          notes: "",
+          phase: 3,
+        });
+      }
+      const { data: plans } = await supabase
+        .from("recovery_plans")
+        .select("id")
+        .eq("patient_id", editingId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (plans && plans.length > 0) {
+        const { data: existingTasks } = await supabase
+          .from("tasks")
+          .select("*")
+          .eq("plan_id", plans[0].id);
+        if (existingTasks) {
+          setTasks(existingTasks.map((t) => ({
+            task_name: t.task_name,
+            task_type: t.task_type ?? "symptom_check",
+            frequency: t.frequency ?? "daily",
+            is_alert_trigger: t.is_alert_trigger ?? false,
+            threshold_value: t.threshold_value ?? "",
+            call_slot: t.call_slot ?? "morning",
+          })));
+        }
+      }
+      setLoading(false);
+    })();
+  }, [editingId]);
 
   function loadTemplate(condition: CardiacCondition) {
     setPatient((p) => ({ ...p, cardiac_condition: condition }));
@@ -123,7 +175,9 @@ export default function PlanBuilderPage() {
     }
     setSaving(true);
     setError("");
-    const res = await savePatient(patient, tasks);
+    const res = editingId
+      ? await updatePatient(editingId, patient, tasks)
+      : await savePatient(patient, tasks);
     if (res.ok) {
       router.push(`/patients/${res.patient_id}`);
     } else {
@@ -136,11 +190,19 @@ export default function PlanBuilderPage() {
 
   const inputCls = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 bg-white focus:outline-none focus:border-[#006d8f] focus:ring-2 focus:ring-[#006d8f]/15 transition-colors placeholder:text-slate-400";
 
+  if (loading) {
+    return (
+      <div className="max-w-2xl flex items-center justify-center py-24">
+        <div className="w-6 h-6 border-2 border-slate-200 border-t-[#006d8f] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Add New Patient</h1>
-        <p className="text-sm text-slate-400 mt-1">Set up a patient profile and recovery plan</p>
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{editingId ? "Edit Patient" : "Add New Patient"}</h1>
+        <p className="text-sm text-slate-400 mt-1">{editingId ? "Update patient profile and recovery plan" : "Set up a patient profile and recovery plan"}</p>
       </div>
 
       {/* Step indicator */}
