@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     const exchanges = (script?.exchanges as Record<string, unknown>[]) ?? [];
     const exchange = exchanges[exchange_index];
     const lang = language === "hi" ? "hi-IN" : "en-US";
-    const voice = language === "hi" ? "Polly.Aditi" : "Polly.Joanna";
+    const voice = language === "hi" ? "Polly.Kajal" : "Polly.Joanna";
     const sttLang = language === "hi" ? "hi-IN" : "en-US";
 
     // Re-ask only if NO speech was captured at all (not on low confidence — short answers like "5" or "seven" score low)
