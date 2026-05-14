@@ -1,6 +1,6 @@
 # Workflow: Daily Call Cycle
 
-**Objective:** Execute the full 4-call daily check-in cycle for a patient — from script generation through to dashboard update.
+**Objective:** Execute the full 4-call daily check-in cycle for a patient.
 
 **Inputs required:** `patient_id`, `call_slot` (morning | medication | exercise | evening)
 
@@ -9,44 +9,40 @@
 ## Steps
 
 1. **Generate the call script**
-   - Run `tools/generate_script.py --patient_id <id> --call_slot <slot>`
-   - Output: `.tmp/script_<patient_id>_<slot>.json`
-   - Edge case: If the patient has no tasks for this slot, the script falls back to standard slot questions.
+   - Triggered automatically when a call is placed.
+   - `lib/tools/generateScript.ts` calls Claude (Anthropic API) with the patient's condition, age, language, and task list for the slot.
+   - Output: a structured JSON script stored in `call_logs.call_script`.
 
 2. **Place the call**
-   - Run `tools/make_call.py --patient_id <id> --call_slot <slot>`
-   - This synthesises audio via ElevenLabs and dials via Twilio.
-   - Always use `--dry_run true` in development.
-   - The Twilio webhook handles the live conversation exchange.
+   - Nurse clicks "Call Now" on the patient detail page, or the API route `POST /api/make-call` is called.
+   - `lib/tools/makeCall.ts` creates a call log in Supabase, then dials via Twilio.
+   - Voice is Amazon Polly (Joanna for English, Kajal for Hindi) via Twilio's built-in TTS.
 
-3. **Handle no-answer**
-   - If Twilio status callback reports `no-answer` or `failed`, the `/api/call-webhook/status` route sets status to `no_answer`.
-   - Wait 30 minutes, then run `tools/retry_call.py --log_id <id>`.
+3. **Handle the live conversation**
+   - Twilio calls `POST /api/call-webhook` to start the call (greeting + first question).
+   - Each patient response is captured by Twilio STT and sent to `POST /api/call-webhook/gather`.
+   - The gather route saves the response to the transcript and returns the next question directly.
+   - If an urgent keyword is detected without a negation, an SMS alert is fired to the nurse.
+   - All questions are always asked regardless of patient responses.
 
-4. **Parse the transcript**
-   - After call completes, run `tools/parse_call.py --log_id <id>`
-   - Reads the transcript from `call_logs.transcript`, sends to Claude for structured parsing.
-   - Writes `parsed_results` (JSON array) and `severity_flag` back to `call_logs`.
+4. **Handle no-answer**
+   - Twilio status callback hits `POST /api/call-webhook/status`.
+   - Status is set to `no_answer` in `call_logs`. No automatic retry (requires manual re-trigger).
 
-5. **Update the dashboard**
-   - Run `tools/update_dashboard.py --log_id <id>`
-   - If `severity_flag = urgent`, this triggers `tools/send_alert.py` immediately.
-   - Dashboard reads from `call_logs` directly — no separate write needed.
+5. **Parse the transcript**
+   - When the call completes, the status callback awaits `lib/tools/parseCall.ts`.
+   - Claude reads the full transcript and extracts: task completion, 1–10 ratings, conclusions, and alert flags.
+   - Results are written to `call_logs.parsed_results` and `call_logs.severity_flag`.
+   - If auto-parse fails, the nurse can click "Re-parse" on the patient detail page.
+
+6. **Dashboard updates automatically**
+   - The nurse portal and family dashboard read directly from `call_logs`. No separate step needed.
 
 ---
 
 ## Edge Cases
 
-- **Patient doesn't speak English or Hindi:** Language is set on the patient record. If blank, defaults to English. Use `tools/detect_language.py` to update it from early call audio.
-- **Twilio rate limits:** Max 1 outbound call per patient per slot. Never retry more than once.
-- **ElevenLabs synthesis failure:** Catch HTTP errors. If synthesis fails, abort the call and log status as `missed` with notes.
-- **Transcript garbled/empty:** `parse_call.py` will raise an error. Log and skip — do not mark as completed.
-- **Call outside 7am–9pm:** `retry_call.py` checks hours before dialling. Skip and log.
-
----
-
-## Bilingual Notes
-
-- The script language is derived from `patients.language`.
-- ElevenLabs uses separate voice IDs per language — set both in `.env`.
-- All steering phrases and confirmations are generated in the same language as the patient.
+- **Patient doesn't speak:** If Gather times out with no speech, the call advances to the next question automatically.
+- **Low-confidence short answers:** Single words like "five" or "yes" score low on STT confidence but are accepted. Re-ask only fires on complete silence.
+- **Transcript garbled or empty:** `parseCall` will return an error. The log remains unparsed and the Re-parse button becomes available.
+- **Urgent symptom mentioned:** SMS alert fires and call continues. The system never hangs up early.

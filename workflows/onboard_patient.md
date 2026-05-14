@@ -2,66 +2,72 @@
 
 **Objective:** Nurse creates a new patient record and recovery plan at discharge.
 
-**Inputs required:** Patient demographics, condition, medications, exercise targets, nurse ID.
+**Inputs required:** Patient demographics, cardiac condition, nurse fills form at `/plan-builder`.
 
 ---
 
 ## Steps
 
-1. **Nurse logs in** via the nurse portal (`/app/(nurse)/`)
+1. **Nurse visits** `/plan-builder` in the nurse portal.
 2. **Nurse fills in patient details:**
-   - Name, date of birth, phone number
+   - Full name, phone number (in international format e.g. +91XXXXXXXXXX)
    - Cardiac condition: `cabg | mi | stent | valve | heart_failure`
    - Preferred language: `en | hi`
-   - Family email and phone (for alerts and weekly summary)
+   - Date of birth, discharge date
+   - Family email and phone (optional — used for alerts and weekly summary email)
    - Heart rate alert threshold (default: 100 bpm)
    - Call start hour (default: 8am)
-   - Timezone
-3. **Nurse builds the recovery plan** using the plan builder (`/app/(nurse)/plan-builder/`)
-   - Selects pre-loaded task templates appropriate for the condition
-   - Assigns each task to a call slot: `morning | medication | exercise | evening`
-   - Sets `is_alert_trigger = true` for symptom-check tasks
-4. **System saves to Supabase:**
-   - New row in `patients`
-   - New row in `recovery_plans`
-   - New rows in `tasks` (one per task)
-5. **Verify:** Confirm all tables show the new patient in the Supabase dashboard.
+3. **Select condition** — a pre-built task template loads automatically with condition-specific medications, exercises, and symptom checks.
+4. **Nurse reviews and edits tasks** on step 2, then clicks "Save patient and plan."
+5. **`savePatient` server action** inserts rows into `patients`, `recovery_plans`, and `tasks` in Supabase.
+6. **Redirected** to the patient detail page at `/patients/[id]`.
+
+---
+
+## Editing an existing patient
+
+- From the patient detail page, click "Edit plan."
+- The plan builder pre-fills all existing patient data and tasks.
+- On save, `updatePatient` server action updates the patient record and replaces all tasks.
 
 ---
 
 ## Pre-loaded Task Templates by Condition
 
 **CABG (Bypass)**
-- Morning: Sleep quality check, chest pain/sternum wound check, resting heart rate
-- Medication: Metoprolol, Aspirin, Atorvastatin, Lisinopril
-- Exercise: 15-minute walk twice daily, post-exercise symptoms
-- Evening: Energy levels, wound check, fluid intake
+- Morning: Sleep quality check, chest pain check, resting heart rate
+- Medication: Metoprolol, Aspirin 75mg, Atorvastatin, Lisinopril
+- Exercise: 15-minute walk (twice daily), post-exercise symptoms
+- Evening: Overall wellbeing, diet adherence (low sodium), ankle/leg swelling check
 
 **MI (Heart Attack)**
-- Morning: Sleep quality, chest pain, resting heart rate
-- Medication: Metoprolol, Aspirin, Clopidogrel, Ramipril
-- Exercise: 10-minute walk once daily, post-exercise symptoms
-- Evening: Appetite, fluid retention, mood/anxiety check
+- Morning: Sleep quality check, chest pain check, resting heart rate
+- Medication: Metoprolol, Aspirin 75mg, Clopidogrel, Ramipril
+- Exercise: 10-minute walk, post-exercise symptoms
+- Evening: Overall wellbeing, diet adherence, ankle/leg swelling check
 
 **Stent**
-- Same as MI template
+- Morning: Chest pain check, resting heart rate
+- Medication: Aspirin 75mg, Clopidogrel
+- Exercise: 10-minute walk, post-exercise symptoms
+- Evening: Overall wellbeing
 
 **Valve Surgery**
-- Morning: Sleep, chest pain, breathlessness
-- Medication: Warfarin, Aspirin (as prescribed), Furosemide
-- Exercise: Gentle walking 5–10 minutes, shortness of breath during activity
+- Morning: Breathlessness at rest, resting heart rate
+- Medication: Warfarin, Furosemide
+- Exercise: 5-10 minute gentle walk, breathlessness during activity
 - Evening: Ankle swelling, fatigue level
 
 **Heart Failure**
-- Morning: Weight check (fluid retention), breathlessness at rest
-- Medication: ACE inhibitor, Beta-blocker, Diuretic, Aldosterone antagonist
-- Exercise: Very gentle walking, stopping criteria
-- Evening: Ankle/leg swelling, breathlessness when lying flat, fluid intake
+- Morning: Breathlessness at rest, weight check (fluid retention)
+- Medication: ACE inhibitor, Beta-blocker, Diuretic
+- Exercise: Gentle walking
+- Evening: Breathlessness when lying flat, ankle/leg swelling, fluid intake check
 
 ---
 
 ## Edge Cases
 
-- **Patient has no family contact:** Family email and phone are optional. Weekly email will be skipped.
-- **Nurse assigns tasks to wrong slot:** Can be corrected via the plan builder. Tasks can be reassigned at any time.
-- **Patient already exists:** Check by phone number before creating a new record to avoid duplicates.
+- **Patient has no family contact:** Family email and phone are optional. Weekly email will be skipped if no email is set.
+- **Duplicate patient:** Check by phone number before creating a new record to avoid duplicates.
+- **Wrong tasks assigned:** Edit plan at any time via the "Edit plan" button on the patient detail page.

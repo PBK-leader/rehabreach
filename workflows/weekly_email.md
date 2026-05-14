@@ -1,50 +1,32 @@
 # Workflow: Weekly Family Email
 
-**Objective:** Send a warm, plain-language weekly compliance summary to the patient's family contact.
+**Objective:** Send a plain-language weekly compliance summary to the patient's family contact.
 
-**Tool:** `tools/send_weekly_email.py`
+**Code:** `lib/tools/sendWeeklyEmail.ts` — triggered via `POST /api/weekly-email` (requires `INTERNAL_API_SECRET`).
 
-**Trigger:** Every Sunday, run once per active patient who has a `family_email` set.
+**Trigger:** Must be called manually or via an external cron job. There is no built-in scheduler in the current prototype.
 
 ---
 
 ## Steps
 
-1. Fetch all `call_logs` for the patient from the past 7 days.
-2. Compute stats: compliance rate, medication adherence days, exercise days, alert count.
-3. Build a prompt for Claude with these stats and patient first name.
-4. Claude generates the HTML email body.
-5. Send via Resend API to `patients.family_email`.
-
----
-
-## Required Content
-
-- Overall compliance rate: % of calls completed out of total scheduled
-- Medication adherence streak: consecutive days all meds confirmed taken
-- Exercise completion rate: days target met vs. 7 total days
-- Any alerts that fired (watch or urgent) and their resolution status
-- A warm personalised encouragement note using the patient's first name
+1. Fetch the patient record from Supabase. Skip if no `family_email` is set.
+2. Fetch all `call_logs` for the past 7 days.
+3. Compute stats: compliance rate, medication adherence days, exercise days, urgent and watch alert counts.
+4. Build a prompt for Claude with these stats and the patient's first name.
+5. Claude generates an HTML email body.
+6. Send via Resend API to `patients.family_email`.
 
 ---
 
 ## Tone Rules (enforced in prompt)
 
-- Warm, simple, non-clinical. No jargon.
+- Warm, simple, non-clinical. No medical jargon.
 - Never lead with bad news without immediately providing context and next steps.
 - If all stats are positive: be warmly encouraging.
 - If there were urgent alerts: acknowledge them, note that the care team has been notified, and reassure.
 - Keep paragraphs short (2–3 sentences).
 - Use the patient's first name throughout.
-
----
-
-## Edge Cases
-
-- **No family email on record:** Skip silently. Log skipped patients.
-- **No calls completed this week:** Send the email but acknowledge the patient was unreachable and the care team has been notified.
-- **Patient was discharged or plan ended:** Out of scope — this platform does not currently track discharge status. Continue sending until manually removed.
-- **Resend API failure:** Retry once after 60 seconds. If still failing, log the error but do not throw — the failure is non-critical.
 
 ---
 
@@ -54,4 +36,12 @@
 
 ## Sender
 
-`from: RehabReach <noreply@rehabreach.app>`
+`RehabReach <noreply@rehabreach.app>` (requires a verified sender domain in Resend)
+
+---
+
+## Edge Cases
+
+- **No family email on record:** Returns `{ skipped: true }`. No email is sent.
+- **Resend API failure:** Error is thrown and returned to the caller.
+- **No calls completed this week:** Email is still sent with zero compliance stats.

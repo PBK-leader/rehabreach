@@ -1,8 +1,8 @@
 # Workflow: Parse Call Response
 
-**Objective:** Extract structured compliance data from a free-form call transcript.
+**Objective:** Extract structured compliance data from a call transcript.
 
-**Tool:** `tools/parse_call.py`
+**Code:** `lib/tools/parseCall.ts` — called automatically after every completed call, and manually via the Re-parse button.
 
 ---
 
@@ -10,7 +10,7 @@
 
 1. Read the transcript from `call_logs.transcript` for the given `log_id`.
 2. Fetch the task list for that call slot to give Claude context.
-3. Send transcript + task list to Claude for structured extraction.
+3. Send transcript and task list to Claude for structured extraction.
 4. Write `parsed_results` (JSON array) and `severity_flag` back to `call_logs`.
 
 ---
@@ -21,48 +21,56 @@ Each item in `parsed_results`:
 
 ```json
 {
-  "task_name": "Take Metoprolol 50mg",
+  "task_name": "Sleep quality check",
   "completed": true,
-  "notes": "Patient confirmed taking with breakfast",
-  "value_reported": null,
+  "notes": "Patient slept well",
+  "value_reported": "7/10",
+  "rating": 7,
+  "conclusion": "Sleep rated 7/10 - slept well but woke up once",
   "alert_flag": "normal"
 }
 ```
 
-`alert_flag` values:
-- `urgent` — cardiac symptom detected
-- `watch` — mild concern (missed meds, swelling, poor sleep, missed exercise)
-- `normal` — no issues
-
----
-
-## Handling Off-Topic Responses
-
-Elderly patients frequently go off-topic — telling stories, asking questions, or wandering.
-- Extract what you can from the response.
-- Set `completed = null` if the question was never answered.
-- Add a brief note: `"notes": "Patient went off-topic; question not answered"`
-- Do not penalise patients for off-topic responses in severity flags.
-
----
-
-## Unclear or Ambiguous Answers
-
-- "I think so" → `completed = true` with note `"Uncertain confirmation"`
-- "I'm not sure" → `completed = null`
-- "No... well, maybe a little" → `completed = null` with note `"Ambiguous"`
+- `rating` — integer 1–10 for subjective questions, null for binary or numeric tasks
+- `conclusion` — one sentence combining the rating and the patient's own description
+- `alert_flag` — `urgent`, `watch`, or `normal`
 
 ---
 
 ## Alert Detection Rules
 
-- **Urgent:** Any mention of chest pain, pressure, tightness, shortness of breath at rest, dizziness, near-fainting, severe confusion.
-- **Watch:** Missing 2+ medications, ankle/leg swelling, poor sleep 3+ nights, exercise missed 2+ days. These require cross-log context that `parse_call.py` does not handle — the dashboard surfaces these by aggregating across logs.
+**Urgent** (any of):
+- Chest pain rated 6 or above
+- Breathlessness rated 7 or above
+- Swelling rated 7 or above
+- Any direct cardiac symptom mentioned
+
+**Watch** (any of):
+- Sleep rated 1–3
+- Fatigue rated 1–3
+- Chest pain rated 3–5
+- Breathlessness rated 4–6
+- Missed 2 or more medications
+
+**Normal:** everything else.
+
+---
+
+## Rating Interpretation
+
+| Symptom | Scale direction | Watch | Urgent |
+|---|---|---|---|
+| Sleep quality | Higher = better | 1–3 | — |
+| Chest pain | Higher = worse | 3–5 | 6+ |
+| Breathlessness | Higher = worse | 4–6 | 7+ |
+| Fatigue/energy | Higher = better | 1–3 | — |
+| Overall wellbeing | Higher = better | 1–3 | — |
+| Swelling | Higher = worse | 4–6 | 7+ |
 
 ---
 
 ## Edge Cases
 
-- **Transcript is empty or very short:** Log error. Do not mark as completed. Keep status as `no_answer`.
-- **Language detection mismatch:** If the transcript appears to be in a different language than expected, note it but still attempt parsing.
-- **Sensitive information shared:** Patients may share personal details. Do not store identifying information in `notes` beyond what's clinically relevant.
+- **Transcript is empty:** `parseCall` throws. The call log remains unparsed. The Re-parse button becomes visible on the nurse portal.
+- **Low-confidence responses in transcript:** Lines marked `[low confidence: X.XX]` are treated as `completed = null` unless clearly interpretable.
+- **Patient gives description but no number:** Claude infers the rating from the description where possible, or sets `rating = null`.

@@ -1,19 +1,18 @@
 # Workflow: Generate Call Script
 
-**Objective:** Turn a patient's task list for a given call slot into a structured bilingual call script.
+**Objective:** Turn a patient's task list for a given call slot into a structured call script.
 
-**Tool:** `tools/generate_script.py`
+**Code:** `lib/tools/generateScript.ts` — called automatically inside `makeCall` before every call.
 
 ---
 
 ## Steps
 
-1. Fetch the patient record and active recovery plan from Supabase.
-2. Fetch all tasks assigned to the requested `call_slot`.
-3. Build a prompt for Claude with patient name, age, condition, language, and task list.
+1. Fetch the patient record from Supabase (name, age, condition, language).
+2. Fetch the most recent recovery plan and all tasks assigned to the requested `call_slot`.
+3. Build a prompt for Claude with patient details and task list.
 4. Claude returns structured JSON: greeting, exchanges (one per task), closing.
-5. Script is saved to `.tmp/script_<patient_id>_<slot>.json`.
-6. JSON is returned for the calling layer to consume.
+5. Script is stored in `call_logs.call_script` in Supabase for the webhook to read during the live call.
 
 ---
 
@@ -28,9 +27,9 @@
     {
       "task_name": "...",
       "question": "...",
+      "hints": ["yes", "no", "one", "two", "five", "seven", "ten", "good", "bad"],
       "confirmation_echo": "...",
       "alert_trigger": false,
-      "alert_threshold": null,
       "urgent_response": null
     }
   ],
@@ -40,27 +39,26 @@
 
 ---
 
-## Pacing Rules (enforced in prompt)
+## Question Format Rules
 
 - Maximum 1 question per exchange.
-- `[pause]` inserted every 2 sentences.
-- Sentences under 12 words wherever possible.
-- Confirmation echo before moving to the next question.
-- Alert-trigger tasks include an `urgent_response` phrase for immediate escalation.
+- For subjective symptom questions (sleep, chest pain, breathlessness, fatigue, swelling): ask for a 1–10 rating AND a brief description in a single question. Example: "On a scale of 1 to 10, how well did you sleep? 1 means very poor and 10 means excellent. And in a few words, how would you describe it?"
+- For binary tasks (medications taken, walk completed): simple yes/no question.
+- For measurable vitals (heart rate, weight): ask for the specific number.
+- Hints array includes numbers one through ten and common descriptors for rating questions.
+- Confirmation echo plays before moving to the next question.
 
 ---
 
 ## Language Notes
 
 - Language is read from `patients.language` (`en` or `hi`).
-- The entire script (greeting, questions, echoes, closing) is generated in the same language.
-- Hindi script uses Romanised Hindi (Hinglish) for TTS compatibility with ElevenLabs.
-- Do not mix languages within a single script exchange.
+- The entire script is generated in the same language.
+- Voice is Amazon Polly: Joanna for English, Kajal for Hindi (via Twilio TTS — no separate TTS API needed).
 
 ---
 
 ## Edge Cases
 
-- **No tasks for this slot:** Script falls back to standard slot questions (sleep, chest pain, etc.) based on `SLOT_FOCUS` in the tool.
-- **Claude returns malformed JSON:** Retry once. If still failing, abort and log the error — do not attempt to call with a broken script.
-- **ElevenLabs character limit:** Keep total script under 5,000 characters. If tasks are many, consolidate questions.
+- **No tasks for this slot:** Script falls back to standard slot questions based on `SLOT_FOCUS` in `generateScript.ts`.
+- **Claude returns malformed JSON:** `JSON.parse` will throw. The call will not be placed and an error is returned to the nurse.
